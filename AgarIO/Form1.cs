@@ -14,6 +14,7 @@ namespace AgarIO
     {
         public Form1()
         {
+            Console.WriteLine();
             InitializeComponent();
         }
     }
