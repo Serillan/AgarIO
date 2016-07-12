@@ -15,6 +15,7 @@ namespace AgarIO
         static void Main()
         {
             Console.WriteLine("test");
+            Console.WriteLine("t");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
