@@ -8,15 +8,29 @@ namespace AgarIOServer
 {
     class ConnectionManager
     {
-        List<ClientConnection> connections { get; set; }
+        List<ClientConnection> Connections { get; set; }
 
         public async Task StartListeningAsync()
         {
-            connections = new List<ClientConnection>();
-
+            Connections = new List<ClientConnection>();
             while (true)
-                connections.Add(await ClientConnection.AcceptClientAsync());
-            Console.WriteLine("ending");
+            {
+                ClientConnection newConnection = await ClientConnection.AcceptClientAsync();
+                Connections.Add(newConnection);
+                ProcessClientAsync(newConnection);
+            }
         }
+
+        public async Task ProcessClientAsync(ClientConnection conn)
+        {
+            while (true)
+            {
+                var msg = await conn.ReceiveAsync();
+                Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
+                // TODO - switch and process events
+            }
+        }
+
     }
+
 }

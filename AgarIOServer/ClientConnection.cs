@@ -8,64 +8,74 @@ using System.Net.Sockets;
 
 namespace AgarIOServer
 {
-    class UdpServer : UdpClient
+    class LoginServer : UdpClient
     {
-        public const int ServerPort = 11028;
+        public const int LoginServerPort = 11028;
         public const int ClientPort = 11020;
 
-        private static UdpServer server;
+        private static LoginServer server;
 
-        private UdpServer(IPEndPoint ip) : base (ip) { }
+        private LoginServer(IPEndPoint ip) : base (ip) { }
 
-        public static UdpServer GetInstance()
+        public static LoginServer GetInstance()
         {
             if (server == null)
-                server = new UdpServer(new IPEndPoint(IPAddress.Any, ServerPort));
+                server = new LoginServer(new IPEndPoint(IPAddress.Any, LoginServerPort));
             return server;
         }
     }
 
     class ClientConnection
     {
-        string PlayerName;
+        public string PlayerName { get; set; }
 
         UdpClient UdpClient;
+        UdpClient UdpListener;
 
         public static async Task<ClientConnection> AcceptClientAsync()
         {
             ClientConnection conn = new ClientConnection();
             conn.UdpClient = new UdpClient();
 
-            var connectionResult = await UdpServer.GetInstance().ReceiveAsync();
-            var message = GetMessageFromConnectionResult(connectionResult);
-
-            if (message.Split().Length > 1 && message.Split()[0] == "CONNECT")
+            while (true)
             {
-                // TODO check whether the name is already in use
-                conn.UdpClient.Connect(connectionResult.RemoteEndPoint.Address, UdpServer.ClientPort);
-                var tokens = message.Split();
-                conn.PlayerName = message.Substring(8);
-                
-            }   
+                var connectionResult = await LoginServer.GetInstance().ReceiveAsync();
+                var message = GetMessageFromConnectionResult(connectionResult);
+                int port = -1;
 
-            Console.WriteLine("Player {0} with IP Adress {1} has succesfully connected!", 
-                conn.PlayerName, connectionResult.RemoteEndPoint.Address);
+                if (message.Split().Length == 3 && message.Split()[0] == "CONNECT")
+                {
+                    // TODO check whether the name is already in use
+                    var tokens = message.Split();
+                    if (!int.TryParse(tokens[1], out port))
+                        continue;
+                    
+                    conn.UdpClient.Connect(connectionResult.RemoteEndPoint.Address, port);
+                    conn.PlayerName = tokens[2];
+                    conn.UdpListener = new UdpClient(new IPEndPoint(connectionResult.RemoteEndPoint.Address, 0));
+                }
+                else
+                    continue;
 
-            conn.SendAsync("CONNECTED");
 
-            return conn;
+                Console.WriteLine("Player {0} with IP Adress {1}:{2} has succesfully connected!",
+                    conn.PlayerName, connectionResult.RemoteEndPoint.Address, port);
+
+                conn.SendAsync("CONNECTED " + (conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port);
+
+                return conn;
+            }
         }
 
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
             await UdpClient.SendAsync(bytes, bytes.Length);
-            Console.WriteLine("Sended");
         }
 
         public async Task<string> ReceiveAsync()
         {
-            var res = await UdpServer.GetInstance().ReceiveAsync();
+            var res = await UdpListener.ReceiveAsync();
             return GetMessageFromConnectionResult(res);
         }
 

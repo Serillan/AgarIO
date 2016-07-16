@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AgarIO
@@ -15,25 +16,31 @@ namespace AgarIO
         UdpClient UdpClient;
         UdpClient UdpServer;
         const int ClientPort = 11020;
-        const int ServerPort = 11028;
+        const int LoginServerPort = 11028;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="adress"></param>
+        /// <param name="playerName"></param>
+        /// <exception cref="TimeoutException">Throws exception if we cannot connect to the Server.</exception>
+        /// <returns></returns>
         public static async Task<ServerConnection> ConnectAsync(IPAddress adress, string playerName)
         {
             ServerConnection conn = new ServerConnection();
-            conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, ClientPort)); // listening
+            conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0)); // listening
             conn.UdpServer = new UdpClient();
-            conn.UdpServer.Connect(adress, ServerPort);    // for writing to server
-
+            conn.UdpServer.Connect(adress, LoginServerPort);    // for writing to server
+            Debug.WriteLine((conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port);
             while(true)
             {
-                
-                await conn.SendAsync("CONNECT " + playerName);
+                await conn.SendAsync(String.Format("CONNECT {0} {1}", (conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port, playerName));
                 Debug.WriteLine("CONNECTING");
 
                 var res = await conn.ReceiveAsync();
-                if (res == "CONNECTED")
+                if (res.Split()[0] == "CONNECTED")
                 {
-                    Debug.WriteLine("Received");
+                    conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
                     return conn;
                 }
                 else
@@ -52,15 +59,18 @@ namespace AgarIO
 
         public async Task<string> ReceiveAsync()
         {
-            //IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, ServerPort);
-            //var res = UdpClient.Receive(ref ep);
-            var ress = UdpClient.ReceiveAsync();
-            UdpReceiveResult res;
-            
-            res = ress.Result;
-            Debug.WriteLine("Received");
-            var message = Encoding.Default.GetString(res.Buffer);
-            return message;
+            var task = UdpClient.ReceiveAsync();
+
+            if (await Task.WhenAny(task, Task.Delay(5000)) == task)
+            {
+                var message = Encoding.Default.GetString(task.Result.Buffer);
+                return message;
+            }
+            else
+            {
+                Dispose();
+                throw new TimeoutException("Cannot connect to the server!");
+            }
         }
 
         public void Dispose()

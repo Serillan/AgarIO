@@ -23,16 +23,23 @@ namespace AgarIO
         /// <returns></returns>
         public async Task StartGameAsync()
         {
-            ServerConnection connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, loginForm.Text);
-            Game game = new Game();
+            ServerConnection connection;
+            try
+            {
+                connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, loginForm.LoginTextBox.Text);
+            } catch (Exception ex)
+            {
+                loginForm.ErrorLabel.Text = ex.Message;
+                return;
+            }
 
+            Game game = new Game();
             GameForm gameForm = new GameForm();
             GraphicsEngine graphicsEngine = new GraphicsEngine(gameForm);
             InputManager inputManager = new InputManager(gameForm, game);
 
             game.Init(this, graphicsEngine, inputManager, connection);
             game.Start();
-
             loginForm.Visible = false;
         }
 

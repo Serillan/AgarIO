@@ -31,6 +31,7 @@
             this.LoginButton = new System.Windows.Forms.Button();
             this.LoginTextBox = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.ErrorLabel = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -38,7 +39,7 @@
             // 
             this.LoginButton.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.LoginButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.LoginButton.Location = new System.Drawing.Point(136, 106);
+            this.LoginButton.Location = new System.Drawing.Point(333, 262);
             this.LoginButton.Name = "LoginButton";
             this.LoginButton.Size = new System.Drawing.Size(176, 36);
             this.LoginButton.TabIndex = 0;
@@ -50,22 +51,33 @@
             // 
             this.LoginTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.LoginTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.LoginTextBox.Location = new System.Drawing.Point(117, 160);
+            this.LoginTextBox.Location = new System.Drawing.Point(314, 316);
             this.LoginTextBox.Name = "LoginTextBox";
             this.LoginTextBox.Size = new System.Drawing.Size(215, 30);
             this.LoginTextBox.TabIndex = 1;
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.ErrorLabel);
             this.panel1.Controls.Add(this.LoginTextBox);
             this.panel1.Controls.Add(this.LoginButton);
-            this.panel1.Location = new System.Drawing.Point(192, 146);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(482, 335);
+            this.panel1.Size = new System.Drawing.Size(877, 647);
             this.panel1.TabIndex = 2;
+            // 
+            // ErrorLabel
+            // 
+            this.ErrorLabel.AutoSize = true;
+            this.ErrorLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ErrorLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.ErrorLabel.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.ErrorLabel.Location = new System.Drawing.Point(0, 622);
+            this.ErrorLabel.Name = "ErrorLabel";
+            this.ErrorLabel.Size = new System.Drawing.Size(12, 25);
+            this.ErrorLabel.TabIndex = 2;
+            this.ErrorLabel.Text = "\r\n";
             // 
             // LoginForm
             // 
@@ -84,7 +96,8 @@
         #endregion
 
         private System.Windows.Forms.Button LoginButton;
-        private System.Windows.Forms.TextBox LoginTextBox;
+        public System.Windows.Forms.TextBox LoginTextBox;
         private System.Windows.Forms.Panel panel1;
+        public System.Windows.Forms.Label ErrorLabel;
     }
 }
