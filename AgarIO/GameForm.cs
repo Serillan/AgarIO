@@ -12,10 +12,17 @@ namespace AgarIO
 {
     public partial class GameForm : Form
     {
-        public GameForm()
+        Game CurrentGame;
+
+        public GameForm(Game game)
         {
-            Console.WriteLine();
+            this.CurrentGame = game;
             InitializeComponent();
+        }
+
+        private void GameForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CurrentGame.Close();
         }
     }
 }

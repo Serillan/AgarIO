@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,41 +9,56 @@ using System.Threading.Tasks;
 
 namespace AgarIO
 {
-    enum ConnectionResult
-    {
-        Connected, AlreadyUsedName, OtherError
-    }
 
     class ServerConnection
     {
         UdpClient UdpClient;
-        const int ListenPort = 11000;
+        UdpClient UdpServer;
+        const int ClientPort = 11020;
         const int ServerPort = 11028;
 
         public static async Task<ServerConnection> ConnectAsync(IPAddress adress, string playerName)
         {
             ServerConnection conn = new ServerConnection();
-            conn.UdpClient = new UdpClient();
+            conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, ClientPort)); // listening
+            conn.UdpServer = new UdpClient();
+            conn.UdpServer.Connect(adress, ServerPort);    // for writing to server
+
             while(true)
             {
-                conn.SendAsync("CONNECT " + playerName);
+                
+                await conn.SendAsync("CONNECT " + playerName);
+                Debug.WriteLine("CONNECTING");
+
                 var res = await conn.ReceiveAsync();
-                // TODO ... if (res == ) ...
+                if (res == "CONNECTED")
+                {
+                    Debug.WriteLine("Received");
+                    return conn;
+                }
+                else
+                {
+                    Debug.WriteLine("error");
+                }
             }
-
-
-            return conn;
         }
 
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
-            await UdpClient.SendAsync(bytes, bytes.Length);
+            int x = await UdpServer.SendAsync(bytes, bytes.Length);
+            return;
         }
 
         public async Task<string> ReceiveAsync()
         {
-            var res = await UdpClient.ReceiveAsync();
+            //IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, ServerPort);
+            //var res = UdpClient.Receive(ref ep);
+            var ress = UdpClient.ReceiveAsync();
+            UdpReceiveResult res;
+            
+            res = ress.Result;
+            Debug.WriteLine("Received");
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
         }
