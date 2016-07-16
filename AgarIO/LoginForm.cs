@@ -13,15 +13,17 @@ namespace AgarIO
 {
     public partial class LoginForm : Form
     {
+        LoginManager manager;
+
         public LoginForm()
         {
             InitializeComponent();
+            manager = new LoginManager(this);
         }
 
         private void LoginButton_Click(object sender, EventArgs e)
         {
-            Game game = new Game(this);
-            game.StartAsync();
+            manager.StartGameAsync();
         }
     }
 }

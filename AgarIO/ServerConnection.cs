@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AgarIO
 {
 
-    class ServerConnection
+    public class ServerConnection : IDisposable
     {
         UdpClient UdpClient;
         UdpClient UdpServer;
@@ -61,6 +61,12 @@ namespace AgarIO
             Debug.WriteLine("Received");
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
+        }
+
+        public void Dispose()
+        {
+            UdpClient.Close();
+            UdpServer.Close();
         }
 
         private ServerConnection() { }

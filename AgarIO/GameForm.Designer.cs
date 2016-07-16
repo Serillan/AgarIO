@@ -39,7 +39,6 @@
             this.Name = "GameForm";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.GameForm_FormClosed);
             this.ResumeLayout(false);
 
         }

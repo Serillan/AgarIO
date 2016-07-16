@@ -9,29 +9,30 @@ namespace AgarIO
 {
     public class Game
     {
-        ServerConnection Connection;
-        GameForm GameForm;
-        LoginForm LoginForm;
+        ServerConnection ServerConnection;
+        LoginManager LoginManager;
+        GraphicsEngine GraphicsEngine;
+        InputManager InputManager;
 
-        public Game(LoginForm loginForm)
+        public void Init(LoginManager loginManager, GraphicsEngine graphicsEngine, 
+            InputManager inputManager, ServerConnection connection)
         {
-            this.LoginForm = loginForm;
+            this.LoginManager = loginManager;
+            this.GraphicsEngine = graphicsEngine;
+            this.InputManager = inputManager;
+            this.ServerConnection = connection;
         }
 
-        public async void StartAsync()
+        public void Start()
         {
-            ServerConnection conn = await ServerConnection.ConnectAsync(IPAddress.Loopback, LoginForm.Text);
-            this.GameForm = new GameForm(this);
-            this.Connection = conn;
-            LoginForm.Visible = false;
-
-            GameForm.Show();
+            GraphicsEngine.StartGraphics();
         }
 
         public void Close()
         {
-            GameForm.BeginInvoke(new Action(() => GameForm.Close()));
-            LoginForm.BeginInvoke(new Action(() => LoginForm.Visible = true));
+            GraphicsEngine.StopGraphics();
+            ServerConnection.Dispose();
+            LoginManager.Show();
         }
     }
 }
