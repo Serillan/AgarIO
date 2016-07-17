@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\packages\protobuf-net.2.1.0\lib\net451\protobuf-net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,11 +49,19 @@
   <ItemGroup>
     <Compile Include="ClientConnection.cs" />
     <Compile Include="ConnectionManager.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entities\Food.cs" />
+    <Compile Include="Entities\Player.cs" />
+    <Compile Include="Entities\PlayerPart.cs" />
+    <Compile Include="Entities\Virus.cs" />
+    <Compile Include="Game.cs" />
+    <Compile Include="Entry.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="Config\App.config" />
+    <None Include="Config\packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

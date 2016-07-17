@@ -11,7 +11,6 @@ namespace AgarIOServer
     class LoginServer : UdpClient
     {
         public const int LoginServerPort = 11028;
-        public const int ClientPort = 11020;
 
         private static LoginServer server;
 
@@ -28,6 +27,7 @@ namespace AgarIOServer
     class ClientConnection : IDisposable
     {
         public string PlayerName { get; set; }
+        public Boolean IsClosed { get; set; }
 
         UdpClient UdpClient;
         UdpClient UdpListener;
@@ -62,7 +62,7 @@ namespace AgarIOServer
                 //    conn.PlayerName, connectionResult.RemoteEndPoint.Address, port);
 
                 conn.SendAsync("CONNECTED " + (conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port);
-
+                conn.IsClosed = false;
                 return conn;
             }
         }
@@ -79,6 +79,16 @@ namespace AgarIOServer
             return GetMessageFromConnectionResult(res);
         }
 
+        public async Task<byte[]> ReceiveBinaryAsync()
+        {
+            return (await UdpListener.ReceiveAsync()).Buffer;
+        }
+
+        public async Task SendBinaryAsync(byte[] data)
+        {
+            await UdpClient.SendAsync(data, data.Length);
+        }
+
         public void Dispose()
         {
             UdpClient.Close();
@@ -90,7 +100,6 @@ namespace AgarIOServer
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
         }
-
 
     }
 }

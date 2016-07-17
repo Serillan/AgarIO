@@ -1,7 +1,13 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +19,7 @@ namespace AgarIO
         LoginManager LoginManager;
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
+        GameState GameState;
 
         /// <summary>
         /// Used for avoiding multiple game closes.
@@ -43,6 +50,25 @@ namespace AgarIO
                 case "STOP":
                     Close(msg.Substring(5));
                     break;
+                default:       // it might be serialized game state
+                    TryLoadState(msg);
+                    break;
+            }
+        }
+
+        public void TryLoadState(string msg)
+        {
+            byte[] data = Encoding.Default.GetBytes(msg);
+            BinaryFormatter formatter = new BinaryFormatter ();
+            MemoryStream stream = new MemoryStream(data);
+            try
+            {
+                var State = (GameState)Serializer.Deserialize(typeof(GameState), stream);
+                this.GameState = State;
+                Debug.WriteLine("Received new state!");
+            } catch (SerializationException ex)
+            {
+                Debug.WriteLine("Deserializing error.");
             }
         }
 

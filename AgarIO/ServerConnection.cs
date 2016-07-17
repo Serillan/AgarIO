@@ -13,7 +13,7 @@ namespace AgarIO
 
     public class ServerConnection : IDisposable
     {
-        UdpClient UdpClient;
+        UdpClient UdpListener;
         UdpClient UdpServer;
         const int ClientPort = 11020;
         const int LoginServerPort = 11028;
@@ -28,10 +28,10 @@ namespace AgarIO
         public static async Task<ServerConnection> ConnectAsync(IPAddress adress, string playerName)
         {
             ServerConnection conn = new ServerConnection();
-            conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0)); // listening
+            conn.UdpListener = new UdpClient(new IPEndPoint(IPAddress.Any, 0)); // listening
             conn.UdpServer = new UdpClient();
             conn.UdpServer.Connect(adress, LoginServerPort);                 // for writing to server
-            Debug.WriteLine((conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port);
+            Debug.WriteLine((conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port);
 
             Debug.WriteLine("CONNECTING");
 
@@ -40,7 +40,7 @@ namespace AgarIO
 
             for (int i = 0; i < 50; i++)
             {
-                await conn.SendAsync(String.Format("CONNECT {0} {1}", (conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port, playerName));
+                await conn.SendAsync(String.Format("CONNECT {0} {1}", (conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port, playerName));
 
                 if (await Task.WhenAny(task, Task.Delay(100)) == task)
                 {
@@ -70,10 +70,20 @@ namespace AgarIO
 
         public async Task<string> ReceiveAsync()
         {
-            var res = await UdpClient.ReceiveAsync();
+            var res = await UdpListener.ReceiveAsync();
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
 
+        }
+
+        public async Task<byte[]> ReceiveBinaryAsync()
+        {
+            return (await UdpListener.ReceiveAsync()).Buffer;
+        }
+
+        public async Task SendBinaryAsync(byte[] data)
+        {
+            await UdpListener.SendAsync(data, data.Length);
         }
 
         public async Task StartReceiving(Action<string> handler)
@@ -92,7 +102,7 @@ namespace AgarIO
 
         public void Dispose()
         {
-            UdpClient.Close();
+            UdpListener.Close();
             UdpServer.Close();
         }
 

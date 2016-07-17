@@ -1,0 +1,21 @@
+﻿using AgarIO.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AgarIO
+{
+
+    [ProtoBuf.ProtoContract]
+    class GameState
+    {
+        [ProtoBuf.ProtoMember(1)]
+        public List<Player> Players { get; set; }
+        [ProtoBuf.ProtoMember(2)]
+        public List<Food> Food { get; set; }
+        [ProtoBuf.ProtoMember(3)]
+        public List<Virus> Viruses { get; set; }
+    }
+}

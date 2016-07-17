@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AgarIOServer
 {
-    class Program
+    class Entry
     {
         static void Main(string[] args)
         {
@@ -16,7 +16,10 @@ namespace AgarIOServer
             var task = manager.StartListeningAsync();
             
 
-            Console.WriteLine("Starting server loop");
+            Console.WriteLine("Starting game loop");
+            Game game = new Game(manager);
+            game.Start();
+
 
             Console.WriteLine("Waiting for Manager task to complete.");
             if (!task.IsCompleted)
