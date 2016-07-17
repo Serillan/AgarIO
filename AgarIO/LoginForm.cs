@@ -23,7 +23,7 @@ namespace AgarIO
 
         private void LoginButton_Click(object sender, EventArgs e)
         {
-            ErrorLabel.Text = "";
+            InfoLabel.Text = "Logging in ...";
             manager.StartGameAsync();
         }
     }

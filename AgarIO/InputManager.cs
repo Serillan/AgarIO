@@ -26,7 +26,9 @@ namespace AgarIO
 
         private void GameForm_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)
         {
-            Game.Close();
+            if (Game.IsRunning)
+                Game.Close("");
+            // otherwise Game is being closed by application
         }
     }
 }

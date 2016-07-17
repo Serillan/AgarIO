@@ -29,7 +29,7 @@ namespace AgarIO
                 connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, loginForm.LoginTextBox.Text);
             } catch (Exception ex)
             {
-                loginForm.ErrorLabel.Text = ex.Message;
+                loginForm.InfoLabel.Text = ex.Message;
                 return;
             }
 
@@ -43,9 +43,13 @@ namespace AgarIO
             loginForm.Visible = false;
         }
 
-        public void Show()
+        public void Show(string closingMsg)
         {
-            loginForm.BeginInvoke(new Action(() => loginForm.Visible = true));
+            loginForm.BeginInvoke(new Action(() =>
+            {
+                loginForm.InfoLabel.Text = closingMsg;
+                loginForm.Visible = true;
+            }));
         }
     }
 }

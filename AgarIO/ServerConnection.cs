@@ -30,24 +30,35 @@ namespace AgarIO
             ServerConnection conn = new ServerConnection();
             conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0)); // listening
             conn.UdpServer = new UdpClient();
-            conn.UdpServer.Connect(adress, LoginServerPort);    // for writing to server
+            conn.UdpServer.Connect(adress, LoginServerPort);                 // for writing to server
             Debug.WriteLine((conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port);
-            while(true)
+
+            Debug.WriteLine("CONNECTING");
+
+            var task = conn.ReceiveAsync();
+            string res;
+
+            for (int i = 0; i < 50; i++)
             {
                 await conn.SendAsync(String.Format("CONNECT {0} {1}", (conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port, playerName));
-                Debug.WriteLine("CONNECTING");
 
-                var res = await conn.ReceiveAsync();
-                if (res.Split()[0] == "CONNECTED")
+                if (await Task.WhenAny(task, Task.Delay(100)) == task)
                 {
-                    conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
-                    return conn;
-                }
-                else
-                {
-                    Debug.WriteLine("error");
+                    res = task.Result;
+                    if (res.Split()[0] == "CONNECTED")
+                    {
+                        conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
+                        return conn;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("error");
+                    }
                 }
             }
+            conn.Dispose();
+            throw new TimeoutException("Cannot connect to the server!");
+
         }
 
         public async Task SendAsync(string message)
@@ -59,17 +70,23 @@ namespace AgarIO
 
         public async Task<string> ReceiveAsync()
         {
-            var task = UdpClient.ReceiveAsync();
+            var res = await UdpClient.ReceiveAsync();
+            var message = Encoding.Default.GetString(res.Buffer);
+            return message;
 
-            if (await Task.WhenAny(task, Task.Delay(5000)) == task)
+        }
+
+        public async Task StartReceiving(Action<string> handler)
+        {
+            while (true)
             {
-                var message = Encoding.Default.GetString(task.Result.Buffer);
-                return message;
-            }
-            else
-            {
-                Dispose();
-                throw new TimeoutException("Cannot connect to the server!");
+                var receiveTask = ReceiveAsync();
+                if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
+                {
+                    handler(receiveTask.Result);
+                }
+                else
+                    handler("STOP Server has stopped responding");
             }
         }
 

@@ -25,7 +25,7 @@ namespace AgarIOServer
         }
     }
 
-    class ClientConnection
+    class ClientConnection : IDisposable
     {
         public string PlayerName { get; set; }
 
@@ -58,8 +58,8 @@ namespace AgarIOServer
                     continue;
 
 
-                Console.WriteLine("Player {0} with IP Adress {1}:{2} has succesfully connected!",
-                    conn.PlayerName, connectionResult.RemoteEndPoint.Address, port);
+                //Console.WriteLine("Player {0} with IP Adress {1}:{2} has succesfully connected!",
+                //    conn.PlayerName, connectionResult.RemoteEndPoint.Address, port);
 
                 conn.SendAsync("CONNECTED " + (conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port);
 
@@ -79,11 +79,18 @@ namespace AgarIOServer
             return GetMessageFromConnectionResult(res);
         }
 
+        public void Dispose()
+        {
+            UdpClient.Close();
+            UdpListener.Close();
+        }
+
         public static string GetMessageFromConnectionResult(UdpReceiveResult res)
         {
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
         }
+
 
     }
 }

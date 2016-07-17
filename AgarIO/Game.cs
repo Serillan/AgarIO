@@ -14,6 +14,11 @@ namespace AgarIO
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
 
+        /// <summary>
+        /// Used for avoiding multiple game closes.
+        /// </summary>
+        public bool IsRunning { get; private set; }
+
         public void Init(LoginManager loginManager, GraphicsEngine graphicsEngine, 
             InputManager inputManager, ServerConnection connection)
         {
@@ -26,13 +31,31 @@ namespace AgarIO
         public void Start()
         {
             GraphicsEngine.StartGraphics();
+            ServerConnection.StartReceiving(OnReceiveMessage);
+            IsRunning = true;
         }
 
-        public void Close()
+        private void OnReceiveMessage(string msg)
         {
+            var tokens = msg.Split();
+            switch (tokens[0])
+            {
+                case "STOP":
+                    Close(msg.Substring(5));
+                    break;
+            }
+        }
+
+        public void Close(string msg)
+        {
+            IsRunning = false;
+
+            ServerConnection.SendAsync("STOP").ContinueWith(new Action<Task>(t => {
+                ServerConnection.Dispose();
+            }));
+
             GraphicsEngine.StopGraphics();
-            ServerConnection.Dispose();
-            LoginManager.Show();
+            LoginManager.Show(msg); 
         }
     }
 }

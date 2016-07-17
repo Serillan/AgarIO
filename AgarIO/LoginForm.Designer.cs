@@ -31,7 +31,7 @@
             this.LoginButton = new System.Windows.Forms.Button();
             this.LoginTextBox = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.ErrorLabel = new System.Windows.Forms.Label();
+            this.InfoLabel = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,7 +58,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.ErrorLabel);
+            this.panel1.Controls.Add(this.InfoLabel);
             this.panel1.Controls.Add(this.LoginTextBox);
             this.panel1.Controls.Add(this.LoginButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -67,17 +67,17 @@
             this.panel1.Size = new System.Drawing.Size(877, 647);
             this.panel1.TabIndex = 2;
             // 
-            // ErrorLabel
+            // InfoLabel
             // 
-            this.ErrorLabel.AutoSize = true;
-            this.ErrorLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ErrorLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.ErrorLabel.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.ErrorLabel.Location = new System.Drawing.Point(0, 622);
-            this.ErrorLabel.Name = "ErrorLabel";
-            this.ErrorLabel.Size = new System.Drawing.Size(12, 25);
-            this.ErrorLabel.TabIndex = 2;
-            this.ErrorLabel.Text = "\r\n";
+            this.InfoLabel.AutoSize = true;
+            this.InfoLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.InfoLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.InfoLabel.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.InfoLabel.Location = new System.Drawing.Point(0, 622);
+            this.InfoLabel.Name = "InfoLabel";
+            this.InfoLabel.Size = new System.Drawing.Size(12, 25);
+            this.InfoLabel.TabIndex = 2;
+            this.InfoLabel.Text = "\r\n";
             // 
             // LoginForm
             // 
@@ -98,6 +98,6 @@
         private System.Windows.Forms.Button LoginButton;
         public System.Windows.Forms.TextBox LoginTextBox;
         private System.Windows.Forms.Panel panel1;
-        public System.Windows.Forms.Label ErrorLabel;
+        public System.Windows.Forms.Label InfoLabel;
     }
 }
