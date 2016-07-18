@@ -80,7 +80,8 @@ namespace AgarIO
             {
                 var State = (GameState)Serializer.Deserialize(typeof(GameState), stream);
                 this.GameState = State;
-                this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
+                // TODO - server has to add player to the state!
+                //this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
                 Debug.WriteLine("Received new state!");
             } catch (SerializationException ex)
             {
