@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AgarIO.Actions
+{
+    class FoodAction : Action
+    {
+        public FoodAction(Point MousePosition) : base(MousePosition)
+        {
+        }
+
+        public override void Process(GameState CurrentState)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

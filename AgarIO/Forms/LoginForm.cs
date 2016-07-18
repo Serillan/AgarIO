@@ -8,8 +8,9 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AgarIO;
 
-namespace AgarIO
+namespace AgarIO.Forms
 {
     public partial class LoginForm : Form
     {

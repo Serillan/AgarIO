@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AgarIO
+namespace AgarIO.Forms
 {
     public partial class GameForm : Form
     {

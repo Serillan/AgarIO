@@ -9,5 +9,7 @@ namespace AgarIO.Entities
     [ProtoBuf.ProtoContract]
     class PlayerPart : Entity
     {
+        [ProtoBuf.ProtoMember(1)]
+        public double Speed { get; set; }
     }
 }

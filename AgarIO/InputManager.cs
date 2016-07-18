@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AgarIO.Forms;
+using System.Windows.Forms;
 
 namespace AgarIO
 {
@@ -10,6 +12,13 @@ namespace AgarIO
     {
         GameForm GameForm;
         Game Game;
+
+        public System.Drawing.Point MousePosition
+        {
+            get {
+                return Cursor.Position;
+            }
+        }
 
         public InputManager(GameForm gameForm, Game game)
         {

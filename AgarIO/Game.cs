@@ -10,6 +10,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
+using AgarIO.Entities;
+using AgarIO.Actions;
 
 namespace AgarIO
 {
@@ -20,6 +22,8 @@ namespace AgarIO
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
         GameState GameState;
+        string PlayerName;
+        
 
         /// <summary>
         /// Used for avoiding multiple game closes.
@@ -40,6 +44,16 @@ namespace AgarIO
             GraphicsEngine.StartGraphics();
             ServerConnection.StartReceiving(OnReceiveMessage);
             IsRunning = true;
+        }
+
+        private async Task GameLoop()
+        {
+            while (true)
+            {
+                new MovementAction(InputManager.MousePosition).Process(GameState);
+                GraphicsEngine.RenderAsync();
+                await Task.Delay(30);
+            }
         }
 
         private void OnReceiveMessage(string msg)
@@ -65,10 +79,15 @@ namespace AgarIO
             {
                 var State = (GameState)Serializer.Deserialize(typeof(GameState), stream);
                 this.GameState = State;
+                this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
                 Debug.WriteLine("Received new state!");
             } catch (SerializationException ex)
             {
                 Debug.WriteLine("Deserializing error.");
+            } catch (ArgumentNullException ex)
+            {
+                Debug.WriteLine("Couldn't find the current player in the current game state");
+                Close("Error");
             }
         }
 

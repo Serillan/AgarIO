@@ -17,5 +17,7 @@ namespace AgarIO
         public List<Food> Food { get; set; }
         [ProtoBuf.ProtoMember(3)]
         public List<Virus> Viruses { get; set; }
+
+        public Player CurrentPlayer { get; set; }
     }
 }

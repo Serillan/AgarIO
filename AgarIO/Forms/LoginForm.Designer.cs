@@ -1,4 +1,4 @@
-﻿namespace AgarIO
+﻿namespace AgarIO.Forms
 {
     partial class LoginForm
     {
