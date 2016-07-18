@@ -59,6 +59,7 @@ namespace AgarIO
         private void OnReceiveMessage(string msg)
         {
             var tokens = msg.Split();
+            Debug.WriteLine($"MSG: {msg}|||");
             switch (tokens[0])
             {
                 case "STOP":
@@ -87,6 +88,11 @@ namespace AgarIO
             } catch (ArgumentNullException ex)
             {
                 Debug.WriteLine("Couldn't find the current player in the current game state");
+                Close("Error");
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.WriteLine("Game State is null after deserialization");
                 Close("Error");
             }
         }
