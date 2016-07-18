@@ -59,7 +59,7 @@ namespace AgarIO
         private void OnReceiveMessage(string msg)
         {
             var tokens = msg.Split();
-            Debug.WriteLine($"MSG: {msg}|||");
+            Debug.WriteLine($"MSG: {msg}");
             switch (tokens[0])
             {
                 case "STOP":
