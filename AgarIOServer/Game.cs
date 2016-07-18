@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using AgarIOServer.Entities;
+using AgarIOServer.Actions;
 
 namespace AgarIOServer
 {
@@ -58,34 +59,21 @@ namespace AgarIOServer
                 case "STOP":
                     ConnectionManager.EndClientConnection(playerName);
                     break;
-                case "MOVE":
-                    if (tokens.Length == 3 && int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y))
-                        ProcessMovementAction(playerName, x, y);
-                    break;
-                case "DIVIDE":
-                    if (tokens.Length == 3 && int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y))
-                        ProcessDivideAction(playerName, x, y);
-                    break;
-                case "GIVEFOOD":
-                    if (tokens.Length == 3 && int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y))
-                        ProcessFoodAction(playerName, x, y);
-                    break;
             }
-        }
 
-        private void ProcessMovementAction(string playerName, int x, int y)
-        {
-
-        }
-
-        private void ProcessDivideAction(string playerName, int x, int y)
-        {
-
-        }
-
-        private void ProcessFoodAction(string playerName, int x, int y)
-        {
-
+            if (tokens.Length == 3 && int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y))
+                switch (tokens[0])
+                {
+                    case "MOVE":
+                        new MovementAction(x, y, playerName).Process(GameState);
+                        break;
+                    case "DIVIDE":
+                        new DivideAction(x, y, playerName).Process(GameState);
+                        break;
+                    case "GIVEFOOD":
+                        new FoodAction(x, y, playerName).Process(GameState);
+                        break;
+                }
         }
     }
 }

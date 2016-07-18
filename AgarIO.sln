@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgarIOClient", "AgarIO\AgarIOClient.csproj", "{EFF94C48-CBB6-4577-87F0-16E647B3A46B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgarIO", "AgarIO\AgarIO.csproj", "{EFF94C48-CBB6-4577-87F0-16E647B3A46B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgarIOServer", "AgarIOServer\AgarIOServer.csproj", "{EA6D3C69-3E6C-4353-82B9-C6315AACB918}"
 EndProject
