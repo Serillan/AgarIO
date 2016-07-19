@@ -28,7 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.GamePanel = new System.Windows.Forms.Panel();
+            //this.GamePanel = new System.Windows.Forms.Panel();
+            this.GamePanel = new GamePanel();
             this.SuspendLayout();
             // 
             // GamePanel
@@ -54,7 +55,7 @@
 
         #endregion
 
-        public System.Windows.Forms.Panel GamePanel;
+        public GamePanel GamePanel;
     }
 }
 

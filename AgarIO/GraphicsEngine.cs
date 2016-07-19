@@ -14,17 +14,18 @@ namespace AgarIO
     class GraphicsEngine
     {
         GameForm GameForm;
-        Panel GamePanel;
-        Image BufferedImage;
+        GamePanel GamePanel;
+        Graphics PanelGraphics;
+        Graphics ImageGraphics;
 
         public GraphicsEngine(GameForm gameForm)
         {
             GameForm = gameForm;
             GamePanel = GameForm.GamePanel;
-            GameForm.GamePanel.Paint += GamePanel_Paint;
-            GamePanel.Resize += GamePanel_Resize;
-            BufferedImage = new Bitmap(GamePanel.Width, GamePanel.Height);
 
+            GamePanel.Resize += GamePanel_Resize;
+            GamePanel.Buffer = new Bitmap(GamePanel.Width, GamePanel.Height);
+            ImageGraphics = Graphics.FromImage(GamePanel.Buffer);
         }
 
         public void StartGraphics()
@@ -34,21 +35,12 @@ namespace AgarIO
 
         private void GamePanel_Resize(object sender, EventArgs e)
         {
-            BufferedImage = new Bitmap(GamePanel.Width, GamePanel.Height);
+            lock (GamePanel.Buffer)
+                GamePanel.Buffer = new Bitmap(GamePanel.Width, GamePanel.Height);
+            ImageGraphics = Graphics.FromImage(GamePanel.Buffer);
         }
 
-        private void GamePanel_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
-        {
-            Debug.WriteLine("rendering");
 
-            /*
-            using (Graphics g = Graphics.FromImage(BufferedImage))
-            {
-                g.DrawEllipse(Pens.Black, 0, 0, 50, 50);
-            }
-            */
-            e.Graphics.DrawImage(BufferedImage, new Point(0, 0));
-        }
 
         public void StopGraphics()
         {
@@ -58,39 +50,34 @@ namespace AgarIO
             }));
         }
 
-        public async Task RenderAsync(GameState state)
+        public void Render(GameState state)
         {
             var parts = state.Players.SelectMany(p => p.Parts).OrderBy(p => p.Radius).ToList();
 
-            foreach (var part in parts)
-            {
-                part.X -= state.CurrentPlayer.X - GamePanel.Width / 2;
-                part.Y -= state.CurrentPlayer.Y - GamePanel.Height / 2;
-            }
-            
-            using (Graphics g = Graphics.FromImage(BufferedImage))
+            long a = 0;
+            lock (GamePanel.Buffer)
             {
                 foreach (var part in parts)
                 {
-                    var r = GameToViewResize(part.Radius, state);
-                    g.DrawEllipse(Pens.Black, (float)(part.X - r), 
-                        (float)(part.Y - r), (float)(2 * r), (float)(2 * r));
-                }
+                    var x = part.X - state.CurrentPlayer.X + GamePanel.Width / 2;
+                    var y = part.Y - state.CurrentPlayer.Y + GamePanel.Height / 2;
 
+                    var r = GameToViewResize(part.Radius, state);
+                    ImageGraphics.FillEllipse(Brushes.Black, (float)(x - r),
+                        (float)(y - r), (float)(2 * r), (float)(2 * r));
+                }
             }
-            
-            /*
-            using (Graphics g = Graphics.FromImage(BufferedImage))
-            {
-                g.DrawEllipse(Pens.Black, 0, 0, 50, 50);
-            }
-            */
             GamePanel.Invalidate();
+            /*
+            GamePanel.Invoke(new MethodInvoker(() => {
+                GamePanel.Refresh();
+            }));
+            */
         }
 
         private double GameToViewResize(double value, GameState state)
         {
-            double coefficient = (0.1 * GamePanel.Width) / state.CurrentPlayer.Radius;
+            double coefficient = (0.02 * GamePanel.Width) / state.CurrentPlayer.Radius;
             return value * coefficient;
         }
     }

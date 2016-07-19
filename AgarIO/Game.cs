@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Entities;
 using AgarIO.Actions;
+using System.Timers;
 
 namespace AgarIO
 {
@@ -23,6 +24,7 @@ namespace AgarIO
         InputManager InputManager;
         GameState GameState;
         string PlayerName;
+        Timer GameTimer;
         
 
         /// <summary>
@@ -45,26 +47,30 @@ namespace AgarIO
             GraphicsEngine.StartGraphics();
             ServerConnection.StartReceiving(OnReceiveMessage);
             IsRunning = true;
-            GameLoop();
+            StartLoop();
         }
 
-        private async Task GameLoop()
+        private async Task StartLoop()
         {
-            while (true)
+            GameTimer = new Timer();
+            GameTimer.Interval = 16;
+            GameTimer.Elapsed += Loop;
+            GameTimer.Start();
+        }
+
+        private void Loop(object sender, ElapsedEventArgs e)
+        {
+            if (GameState != null)
             {
-                if (GameState != null)
-                {
-                    new MovementAction(InputManager.MousePosition).Process(GameState);
-                    GraphicsEngine.RenderAsync(GameState);
-                }
-                await Task.Delay(30);
+                new MovementAction(InputManager.MousePosition).Process(GameState);
+                GraphicsEngine.Render(GameState);
             }
         }
 
         private void OnReceiveMessage(string msg)
         {
             var tokens = msg.Split();
-            Debug.WriteLine($"MSG: {msg}");
+            //Debug.WriteLine($"MSG: {msg}");
             switch (tokens[0])
             {
                 case "STOP":
@@ -87,7 +93,7 @@ namespace AgarIO
                 state.CurrentPlayer = state.Players.Find(p => p.Name == PlayerName);
                 // TODO - server has to add player to the state!
                 //this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
-                Debug.WriteLine("Received new state!");
+                //Debug.WriteLine("Received new state!");
             } catch (SerializationException ex)
             {
                 Debug.WriteLine("Deserializing error.");
@@ -106,7 +112,7 @@ namespace AgarIO
         public void Close(string msg)
         {
             IsRunning = false;
-
+            GameTimer.Stop();
             ServerConnection.SendAsync("STOP").ContinueWith(new Action<Task>(t => {
                 ServerConnection.Dispose();
             }));
