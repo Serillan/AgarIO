@@ -12,7 +12,7 @@ using AgarIO;
 
 namespace AgarIO.Forms
 {
-    public partial class LoginForm : Form
+    partial class LoginForm : Form
     {
         LoginManager manager;
 

@@ -28,14 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.GamePanel = new System.Windows.Forms.Panel();
             this.SuspendLayout();
+            // 
+            // GamePanel
+            // 
+            this.GamePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GamePanel.Location = new System.Drawing.Point(0, 0);
+            this.GamePanel.Name = "GamePanel";
+            this.GamePanel.Size = new System.Drawing.Size(804, 545);
+            this.GamePanel.TabIndex = 0;
             // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 545);
-            this.DoubleBuffered = true;
+            this.Controls.Add(this.GamePanel);
             this.Name = "GameForm";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
@@ -44,6 +53,8 @@
         }
 
         #endregion
+
+        public System.Windows.Forms.Panel GamePanel;
     }
 }
 

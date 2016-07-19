@@ -8,7 +8,7 @@ using AgarIO.Forms;
 
 namespace AgarIO
 {
-    public class LoginManager
+    class LoginManager
     {
         LoginForm loginForm;
 
@@ -25,9 +25,10 @@ namespace AgarIO
         public async Task StartGameAsync()
         {
             ServerConnection connection;
+            string playerName = loginForm.LoginTextBox.Text;
             try
             {
-                connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, loginForm.LoginTextBox.Text);
+                connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, playerName);
             } catch (Exception ex)
             {
                 loginForm.InfoLabel.Text = ex.Message;
@@ -39,7 +40,7 @@ namespace AgarIO
             GraphicsEngine graphicsEngine = new GraphicsEngine(gameForm);
             InputManager inputManager = new InputManager(gameForm, game);
 
-            game.Init(this, graphicsEngine, inputManager, connection);
+            game.Init(this, graphicsEngine, inputManager, connection, playerName);
             game.Start();
             loginForm.Visible = false;
         }

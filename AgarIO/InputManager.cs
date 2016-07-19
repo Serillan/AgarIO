@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace AgarIO
 {
-    public class InputManager
+    class InputManager
     {
         GameForm GameForm;
         Game Game;

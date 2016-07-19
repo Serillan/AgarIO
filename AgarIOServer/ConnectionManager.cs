@@ -27,6 +27,7 @@ namespace AgarIOServer
                     Console.WriteLine("Player {0} has succesfully connected!",
                        newConnection.PlayerName);
                     Connections.Add(newConnection);
+                    PlayerMessageHandler(newConnection.PlayerName, "CONNECTED");
                 }
                 ProcessClientAsync(newConnection);
             }
@@ -47,6 +48,7 @@ namespace AgarIOServer
                 else // timeout
                 {
                     conn.SendAsync("STOP TIMEOUT");
+                    PlayerMessageHandler(conn.PlayerName, "STOP");
                     Console.WriteLine("Stopping player {0} because of timeout!", conn.PlayerName);
                     EndClientConnection(conn);
                     return;

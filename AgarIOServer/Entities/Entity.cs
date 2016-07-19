@@ -7,15 +7,24 @@ using System.Threading.Tasks;
 namespace AgarIOServer.Entities
 {
     [ProtoBuf.ProtoContract]
+    [ProtoBuf.ProtoInclude(5, typeof(Food))]
+    [ProtoBuf.ProtoInclude(6, typeof(Player))]
+    [ProtoBuf.ProtoInclude(7, typeof(PlayerPart))]
+    [ProtoBuf.ProtoInclude(8, typeof(Virus))]
     abstract class Entity
     {
         [ProtoBuf.ProtoMember(1)]
         public int Mass { get; set; }
-        [ProtoBuf.ProtoMember(2)]
-        public int Radius { get; set; }
+        [ProtoBuf.ProtoIgnore]
+        public double Radius {
+            get
+            {
+                return Math.Sqrt(Mass);
+            }
+        }
         [ProtoBuf.ProtoMember(3)]
-        public int X { get; set; }
+        public double X { get; set; }
         [ProtoBuf.ProtoMember(4)]
-        public int Y { get; set; }
+        public double Y { get; set; }
     }
 }

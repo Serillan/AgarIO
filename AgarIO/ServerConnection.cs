@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace AgarIO
 {
 
-    public class ServerConnection : IDisposable
+    class ServerConnection : IDisposable
     {
         UdpClient UdpListener;
         UdpClient UdpServer;

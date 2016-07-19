@@ -13,5 +13,22 @@ namespace AgarIOServer.Entities
         public string Name { get; set; }
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
+
+        public Player(string name)
+        {
+            this.Name = name;
+            this.Mass = 5;
+            this.X = new Random().Next(0, Game.MaxLocationX);
+            this.Y = new Random().Next(0, Game.MaxLocationY);
+
+            this.Parts = new List<PlayerPart>();
+            var part = new PlayerPart();
+            part.Mass = Mass;
+            part.X = X;
+            part.Y = Y;
+            Parts.Add(part);
+        }
+
+        public Player() { }
     }
 }

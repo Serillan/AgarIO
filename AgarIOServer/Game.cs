@@ -12,7 +12,9 @@ namespace AgarIOServer
 {
     class Game
     {
-        const int ServerLoopInterval = 5000; // ms
+        const int ServerLoopInterval = 50; // ms
+        public const int MaxLocationX = 2000;
+        public const int MaxLocationY = 2000;
 
         ConnectionManager ConnectionManager;
         GameState GameState;
@@ -32,7 +34,6 @@ namespace AgarIOServer
         public GameState GenerateNewGameState()
         {
             GameState state = new GameState();
-            state.Food.Add(new Food() { Mass = 2, Radius = 1 });
             return state;
         }
 
@@ -41,14 +42,12 @@ namespace AgarIOServer
             while (true)
             {
                 await Task.Delay(ServerLoopInterval);
-                ConnectionManager.SendToAllClients(GameState);
+                lock(GameState)
+                    ConnectionManager.SendToAllClients(GameState);
             }
         }
 
-        //
-        // PROCESSING ACTIONS
-        //
-
+  
         private void ProcessClientMessage(string playerName, string msg)
         {
             string[] tokens = msg.Split();
@@ -58,6 +57,13 @@ namespace AgarIOServer
             {
                 case "STOP":
                     ConnectionManager.EndClientConnection(playerName);
+                    lock(GameState)
+                        GameState.Players.RemoveAll(p => p.Name == playerName);
+                    break;
+                case "CONNECTED":
+                    Player newPlayer = new Player(playerName);
+                    lock(GameState)
+                        GameState.Players.Add(newPlayer);
                     break;
             }
 

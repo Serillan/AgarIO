@@ -15,7 +15,7 @@ namespace AgarIO.Actions
 
         public override void Process(GameState CurrentState)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

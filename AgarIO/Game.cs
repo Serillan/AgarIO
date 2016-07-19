@@ -15,7 +15,7 @@ using AgarIO.Actions;
 
 namespace AgarIO
 {
-    public class Game
+    class Game
     {
         ServerConnection ServerConnection;
         LoginManager LoginManager;
@@ -31,12 +31,13 @@ namespace AgarIO
         public bool IsRunning { get; private set; }
 
         public void Init(LoginManager loginManager, GraphicsEngine graphicsEngine, 
-            InputManager inputManager, ServerConnection connection)
+            InputManager inputManager, ServerConnection connection, string playerName)
         {
             this.LoginManager = loginManager;
             this.GraphicsEngine = graphicsEngine;
             this.InputManager = inputManager;
             this.ServerConnection = connection;
+            this.PlayerName = playerName;
         }
 
         public void Start()
@@ -44,14 +45,18 @@ namespace AgarIO
             GraphicsEngine.StartGraphics();
             ServerConnection.StartReceiving(OnReceiveMessage);
             IsRunning = true;
+            GameLoop();
         }
 
         private async Task GameLoop()
         {
             while (true)
             {
-                new MovementAction(InputManager.MousePosition).Process(GameState);
-                GraphicsEngine.RenderAsync();
+                if (GameState != null)
+                {
+                    new MovementAction(InputManager.MousePosition).Process(GameState);
+                    GraphicsEngine.RenderAsync(GameState);
+                }
                 await Task.Delay(30);
             }
         }
@@ -74,12 +79,12 @@ namespace AgarIO
         public void TryLoadState(string msg)
         {
             byte[] data = Encoding.Default.GetBytes(msg);
-            BinaryFormatter formatter = new BinaryFormatter ();
             MemoryStream stream = new MemoryStream(data);
             try
             {
-                var State = (GameState)Serializer.Deserialize(typeof(GameState), stream);
-                this.GameState = State;
+                var state = Serializer.Deserialize<GameState>(stream);
+                this.GameState = state;
+                state.CurrentPlayer = state.Players.Find(p => p.Name == PlayerName);
                 // TODO - server has to add player to the state!
                 //this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
                 Debug.WriteLine("Received new state!");

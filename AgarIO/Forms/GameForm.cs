@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace AgarIO.Forms
 {
-    public partial class GameForm : Form
+    partial class GameForm : Form
     {
 
         public GameForm()
