@@ -8,7 +8,7 @@ namespace AgarIOServer.Actions
 {
     class DivideAction : Action
     {
-        public DivideAction(int x, int y, string playerName) : base(x, y, playerName)
+        public DivideAction(double x, double y, string playerName) : base(x, y, playerName)
         {
         }
 

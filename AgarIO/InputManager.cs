@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Forms;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Diagnostics;
 
 namespace AgarIO
 {
@@ -13,12 +15,7 @@ namespace AgarIO
         GameForm GameForm;
         Game Game;
 
-        public System.Drawing.Point MousePosition
-        {
-            get {
-                return Cursor.Position;
-            }
-        }
+        public Point MousePosition { get; private set; }
 
         public InputManager(GameForm gameForm, Game game)
         {
@@ -31,6 +28,13 @@ namespace AgarIO
         private void Init()
         {
             GameForm.FormClosed += GameForm_FormClosed;
+            GameForm.GamePanel.MouseMove += GamePanel_MouseMove;
+        }
+
+        private void GamePanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            Debug.WriteLine("change");
+            MousePosition = GameForm.GamePanel.PointToClient(Cursor.Position);
         }
 
         private void GameForm_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)

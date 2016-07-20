@@ -8,13 +8,18 @@ namespace AgarIOServer.Actions
 {
     class MovementAction : Action
     {
-        public MovementAction(int x, int y, string playerName) : base(x, y, playerName)
+        public MovementAction(double x, double y, string playerName) : base(x, y, playerName)
         {
         }
 
-        public override void Process(GameState CurrentState)
+        public override void Process(GameState currentState)
         {
-            throw new NotImplementedException();
+            var player = currentState.Players.Find(p => p.Name == PlayerName);
+            foreach (var part in player.Parts)
+            {
+                part.X = X;
+                part.Y = Y;
+            }
         }
     }
 }

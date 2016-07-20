@@ -12,12 +12,13 @@ namespace AgarIOServer
 {
     class Game
     {
-        const int ServerLoopInterval = 50; // ms
+        const int ServerLoopInterval = 30; // ms
         public const int MaxLocationX = 2000;
         public const int MaxLocationY = 2000;
-
+        public static Random RandomG = new Random();
         ConnectionManager ConnectionManager;
         GameState GameState;
+        
 
         public Game(ConnectionManager connectionManager)
         {
@@ -51,7 +52,7 @@ namespace AgarIOServer
         private void ProcessClientMessage(string playerName, string msg)
         {
             string[] tokens = msg.Split();
-            int x, y;
+            double x = 0, y = 0;
 
             switch (tokens[0])
             {
@@ -67,7 +68,7 @@ namespace AgarIOServer
                     break;
             }
 
-            if (tokens.Length == 3 && int.TryParse(tokens[1], out x) && int.TryParse(tokens[2], out y))
+            if (tokens.Length == 3 && double.TryParse(tokens[1], out x) && double.TryParse(tokens[2], out y))
                 switch (tokens[0])
                 {
                     case "MOVE":

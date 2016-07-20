@@ -57,11 +57,13 @@ namespace AgarIO
             long a = 0;
             lock (GamePanel.Buffer)
             {
+                ImageGraphics.Clear(Color.White);
+                DrawMatrix(state);
+
                 foreach (var part in parts)
                 {
-                    var x = part.X - state.CurrentPlayer.X + GamePanel.Width / 2;
-                    var y = part.Y - state.CurrentPlayer.Y + GamePanel.Height / 2;
-
+                    var x = part.X - state.CurrentPlayer.X + GamePanel.Width / 2.0;
+                    var y = part.Y - state.CurrentPlayer.Y + GamePanel.Height / 2.0;
                     var r = GameToViewResize(part.Radius, state);
                     ImageGraphics.FillEllipse(Brushes.Black, (float)(x - r),
                         (float)(y - r), (float)(2 * r), (float)(2 * r));
@@ -73,6 +75,18 @@ namespace AgarIO
                 GamePanel.Refresh();
             }));
             */
+        }
+
+        private void DrawMatrix(GameState state)
+        {
+            var dx = (float)(-state.CurrentPlayer.X + GamePanel.Width / 2);
+            var dy = (float)(-state.CurrentPlayer.Y + GamePanel.Height / 2);
+
+            for (int x = 0; x < Game.MaxLocationX; x += 50)
+                ImageGraphics.DrawLine(Pens.Gray, x + dx, dy, x + dx, Game.MaxLocationY + dy);
+
+            for (int y = 0; y < Game.MaxLocationY; y += 50)
+                ImageGraphics.DrawLine(Pens.Gray, dx, y + dy, Game.MaxLocationX + dx, y + dy);
         }
 
         private double GameToViewResize(double value, GameState state)

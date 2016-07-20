@@ -13,5 +13,27 @@ namespace AgarIO.Entities
         public string Name { get; set; }
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
+        [ProtoBuf.ProtoIgnore]
+        new public double X
+        {
+            get
+            {
+                double x = 0;
+                foreach (var part in Parts)
+                    x += part.X;
+                return x / Parts.Count;
+            }
+        }
+        [ProtoBuf.ProtoIgnore]
+        new public double Y
+        {
+            get
+            {
+                double y = 0;
+                foreach (var part in Parts)
+                    y += part.Y;
+                return y / Parts.Count;
+            }
+        }
     }
 }

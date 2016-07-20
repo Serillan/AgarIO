@@ -108,7 +108,10 @@ namespace AgarIOServer
         {
             var stream = new MemoryStream();
             Serializer.Serialize(stream, state);
-            Console.WriteLine("Sending state with size : {0}B", stream.ToArray().Length);
+            //Console.WriteLine("Sending state with size : {0}B", stream.ToArray().Length);
+            stream.Seek(0, SeekOrigin.Begin);
+            var s = Serializer.Deserialize<GameState>(stream);
+
             SendToAllClients(stream.ToArray());
         }
     }

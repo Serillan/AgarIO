@@ -8,7 +8,7 @@ namespace AgarIOServer.Actions
 {
     class FoodAction : Action
     {
-        public FoodAction(int x, int y, string playerName) : base(x, y, playerName)
+        public FoodAction(double x, double y, string playerName) : base(x, y, playerName)
         {
         }
 

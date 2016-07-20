@@ -8,15 +8,15 @@ namespace AgarIOServer.Actions
 {
     abstract class Action
     {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public string Player { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public string PlayerName { get; set; }
 
-        public Action(int x, int y, string playerName)
+        public Action(double x, double y, string playerName)
         {
             this.X = x;
             this.Y = y;
-            this.Player = playerName;
+            this.PlayerName = playerName;
         }
 
         public abstract void Process(GameState CurrentState);

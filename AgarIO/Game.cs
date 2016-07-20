@@ -18,14 +18,17 @@ namespace AgarIO
 {
     class Game
     {
-        ServerConnection ServerConnection;
+        public static ServerConnection ServerConnection;
         LoginManager LoginManager;
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
         GameState GameState;
         string PlayerName;
         Timer GameTimer;
-        
+
+        public const int MaxLocationX = 2000;
+        public const int MaxLocationY = 2000;
+
 
         /// <summary>
         /// Used for avoiding multiple game closes.
@@ -38,7 +41,7 @@ namespace AgarIO
             this.LoginManager = loginManager;
             this.GraphicsEngine = graphicsEngine;
             this.InputManager = inputManager;
-            this.ServerConnection = connection;
+            ServerConnection = connection;
             this.PlayerName = playerName;
         }
 
@@ -53,7 +56,7 @@ namespace AgarIO
         private async Task StartLoop()
         {
             GameTimer = new Timer();
-            GameTimer.Interval = 16;
+            GameTimer.Interval = 4000;
             GameTimer.Elapsed += Loop;
             GameTimer.Start();
         }

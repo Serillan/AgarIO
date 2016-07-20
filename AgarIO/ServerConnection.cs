@@ -65,7 +65,6 @@ namespace AgarIO
         {
             var bytes = Encoding.Default.GetBytes(message);
             int x = await UdpServer.SendAsync(bytes, bytes.Length);
-            return;
         }
 
         public async Task<string> ReceiveAsync()
