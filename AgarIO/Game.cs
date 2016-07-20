@@ -28,6 +28,7 @@ namespace AgarIO
 
         public const int MaxLocationX = 2000;
         public const int MaxLocationY = 2000;
+        const int GameLoopInterval = 60;
 
 
         /// <summary>
@@ -55,10 +56,13 @@ namespace AgarIO
 
         private async Task StartLoop()
         {
+            //Task.Factory.StartNew(new System.Action(() => Loop2()));
+            
             GameTimer = new Timer();
-            GameTimer.Interval = 4000;
+            GameTimer.Interval = GameLoopInterval;
             GameTimer.Elapsed += Loop;
             GameTimer.Start();
+            
         }
 
         private void Loop(object sender, ElapsedEventArgs e)
@@ -67,6 +71,22 @@ namespace AgarIO
             {
                 new MovementAction(InputManager.MousePosition).Process(GameState);
                 GraphicsEngine.Render(GameState);
+            }
+        }
+
+        private void Loop2()
+        {
+            var a = Stopwatch.GetTimestamp();
+            while (true)
+            {
+                var b = Stopwatch.GetTimestamp();
+                var delta = 1000 * (b - a) / Stopwatch.Frequency;
+                if (GameState != null && delta > GameLoopInterval)
+                {
+                    new MovementAction(InputManager.MousePosition).Process(GameState);
+                    GraphicsEngine.Render(GameState);
+                    a = Stopwatch.GetTimestamp();
+                }
             }
         }
 

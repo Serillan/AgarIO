@@ -28,12 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            //this.GamePanel = new System.Windows.Forms.Panel();
-            this.GamePanel = new GamePanel();
+            this.GamePanel = new AgarIO.Forms.GamePanel();
             this.SuspendLayout();
             // 
             // GamePanel
             // 
+            this.GamePanel.Buffer = null;
+            this.GamePanel.Display = null;
             this.GamePanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GamePanel.Location = new System.Drawing.Point(0, 0);
             this.GamePanel.Name = "GamePanel";
@@ -46,6 +47,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 545);
             this.Controls.Add(this.GamePanel);
+            this.DoubleBuffered = true;
             this.Name = "GameForm";
             this.Text = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;

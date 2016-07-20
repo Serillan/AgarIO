@@ -14,7 +14,7 @@ namespace AgarIOServer.Entities
         {
             get
             {
-                return 200 / Math.Sqrt(Mass);
+                return 2000 / Math.Sqrt(Mass);
             }
         }
     }

@@ -42,7 +42,7 @@ namespace AgarIOServer
                 if (task == receiveTask)
                 {
                     var msg = receiveTask.Result;
-                    Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
+                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
                     PlayerMessageHandler(conn.PlayerName, msg);
                 }
                 else // timeout
@@ -104,6 +104,7 @@ namespace AgarIOServer
             
         }
 
+        // TODO : state size is higher than 500B -> fragmentation needed!
         public async void SendToAllClients(GameState state)
         {
             var stream = new MemoryStream();

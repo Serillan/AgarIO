@@ -90,7 +90,7 @@ namespace AgarIO
             while (true)
             {
                 var receiveTask = ReceiveAsync();
-                if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
+                if (await Task.WhenAny(receiveTask, Task.Delay(50000)) == receiveTask)
                 {
                     handler(receiveTask.Result);
                 }

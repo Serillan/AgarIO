@@ -19,17 +19,19 @@ namespace AgarIO.Actions
                 return;
             foreach (var part in CurrentState.CurrentPlayer.Parts)
             {
-                var vX = X - part.X;
-                var vY = Y - part.Y;
+                var vX = X - GraphicsEngine.GamePanelWidth / 2;
+                var vY = Y - GraphicsEngine.GamePanelHeight / 2;
 
                 // normalize
                 var size = Math.Sqrt(vX * vX + vY * vY);
+                if (size == 0)
+                    return;
                 vX *= (1 / size);
                 vY *= (1 / size);
 
-                // apply
-                //part.X += vX * part.Speed;
-                //part.Y += vY * part.Speed;
+                //apply
+                part.X += vX * part.Speed;
+                part.Y += vY * part.Speed;
                 //Game.ServerConnection.SendAsync($"MOVE {X} {Y}");
 
                 Game.ServerConnection.SendAsync($"MOVE {part.X + vX * part.Speed} {part.Y + vY * part.Speed}");
