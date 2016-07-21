@@ -46,37 +46,9 @@ namespace AgarIO
             GamePanel.Resize += GamePanel_Resize;
             GamePanel.Buffer = new Bitmap(GamePanel.Width, GamePanel.Height);
             ImageGraphics = Graphics.FromImage(GamePanel.Buffer);
-            MatrixPen = new Pen(Color.Gray, 10);
-            // MatrixPen.
-            //GamePanel.Paint += GamePanel_Paint;
-            //GameForm.Paint += GameForm_Paint;
+            MatrixPen = new Pen(Color.FromArgb(25, 25, 25), 10);
+            GamePanel.Paint += GamePanel_Paint;
 
-        }
-
-        private void GameForm_Paint(object sender, PaintEventArgs e)
-        {
-            /*
-            if (state == null)
-                return;
-            var parts = state.Players.SelectMany(p => p.Parts).OrderBy(p => p.Radius).ToList();
-
-            long a = 0;
-
-            //e.Graphics.Clear(Color.AliceBlue);
-            DrawMatrix(state, e.Graphics);
-
-            foreach (var part in parts)
-            {
-                var x = part.X - state.CurrentPlayer.X + GamePanel.Width / 2.0;
-                var y = part.Y - state.CurrentPlayer.Y + GamePanel.Height / 2.0;
-                var r = GameToViewResize(part.Radius, state);
-                e.Graphics.FillEllipse(Brushes.Black, (float)(x - r),
-                    (float)(y - r), (float)(2 * r), (float)(2 * r));
-                //Font myFont = new Font("Arial", 14);
-                //if (state.CurrentPlayer.Parts.Contains(part))
-                //    e.Graphics.DrawString($"{part.X} {part.Y}", myFont, Brushes.Black, 10, 10);
-            }
-            */
         }
 
         private void GamePanel_Paint(object sender, PaintEventArgs e)
@@ -87,7 +59,7 @@ namespace AgarIO
 
             long a = 0;
 
-            //e.Graphics.Clear(Color.AliceBlue);
+            e.Graphics.Clear(Color.Black);
             DrawMatrix(state, e.Graphics);
 
             foreach (var part in parts)
@@ -95,7 +67,7 @@ namespace AgarIO
                 var x = part.X - state.CurrentPlayer.X + GamePanel.Width / 2.0;
                 var y = part.Y - state.CurrentPlayer.Y + GamePanel.Height / 2.0;
                 var r = GameToViewResize(part.Radius, state);
-                e.Graphics.FillEllipse(Brushes.Black, (float)(x - r),
+                e.Graphics.FillEllipse(Brushes.DarkGoldenrod, (float)(x - r),
                     (float)(y - r), (float)(2 * r), (float)(2 * r));
                 //Font myFont = new Font("Arial", 14);
                 //if (state.CurrentPlayer.Parts.Contains(part))
@@ -116,8 +88,6 @@ namespace AgarIO
             ImageGraphics = Graphics.FromImage(GamePanel.Buffer);
         }
 
-
-
         public void StopGraphics()
         {
             GameForm.BeginInvoke(new Action(() =>
@@ -129,9 +99,9 @@ namespace AgarIO
         public void Render(GameState state)
         {
             this.state = state;
-            //GamePanel.Invalidate();
+            GamePanel.Invalidate();
             //GameForm.Invalidate();
-            
+            /*
             var parts = state.Players.SelectMany(p => p.Parts).OrderBy(p => p.Radius).ToList();
 
             long a = 0;
@@ -164,11 +134,6 @@ namespace AgarIO
                 GamePanel.Refresh();
             }));
             */
-        }
-
-        private void PrepareMatrix()
-        {
-            MatrixImage = new Bitmap(GamePanel.Width, GamePanel.Height);
         }
 
         private void DrawMatrix(GameState state, Graphics g)

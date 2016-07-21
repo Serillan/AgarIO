@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Entities;
@@ -28,7 +27,7 @@ namespace AgarIO
 
         public const int MaxLocationX = 2000;
         public const int MaxLocationY = 2000;
-        const int GameLoopInterval = 60;
+        const int GameLoopInterval = 16;
 
 
         /// <summary>

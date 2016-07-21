@@ -18,7 +18,7 @@ namespace AgarIO.Forms
         {
             InitializeComponent();
         }
-
+        /*
         protected override CreateParams CreateParams
         {
             get
@@ -28,10 +28,10 @@ namespace AgarIO.Forms
                 return cp;
             }
         }
-
+        */
     }
 
-    class GamePanel : Panel
+    class GamePanel : PictureBox
     {
         public Bitmap Buffer { get; set; }
         public Bitmap Display { get; set; }
@@ -39,13 +39,13 @@ namespace AgarIO.Forms
         public GamePanel()
         {
             //this.DoubleBuffered = true;
-            //SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint |
+           // SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint |
             //   ControlStyles.UserPaint, true);
             // Enable double duffering to stop flickering.
-            if (!this.IsHandleCreated)
-            {
-                this.CreateHandle();
-            }
+            //if (!this.IsHandleCreated)
+            //{
+             //   this.CreateHandle();
+            //}
         }
 
 
@@ -55,14 +55,14 @@ namespace AgarIO.Forms
         {
             var a = Stopwatch.GetTimestamp();
             base.OnPaint(e);
-            
+            /*
             if (Display != null)
                 lock (Display)
                     e.Graphics.DrawImage(Display, Point.Empty);
 
             Debug.WriteLine("---- {0}ms",
                 1000 * (Stopwatch.GetTimestamp() - a) / Stopwatch.Frequency);
-                
+                */
         }
 
     }

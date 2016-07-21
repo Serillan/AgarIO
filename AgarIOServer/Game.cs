@@ -12,7 +12,7 @@ namespace AgarIOServer
 {
     class Game
     {
-        const int ServerLoopInterval = 30; // ms
+        const int ServerLoopInterval = 10; // ms
         public const int MaxLocationX = 2000;
         public const int MaxLocationY = 2000;
         public static Random RandomG = new Random();
