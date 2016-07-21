@@ -9,13 +9,19 @@ namespace AgarIO.Entities
     [ProtoBuf.ProtoContract]
     class PlayerPart : Entity
     {
+
         [ProtoBuf.ProtoIgnore]
-        public double Speed
+        public float Speed
         {
             get
             {
-                return 5 / Math.Sqrt(Mass);
+                return (10 / NthRoot(Mass, 5));
             }
+        }
+
+        private float NthRoot(float A, int N)
+        {
+            return (float)(Math.Pow(A, 1.0 / N));
         }
     }
 }

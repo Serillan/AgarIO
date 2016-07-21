@@ -29,6 +29,16 @@ namespace AgarIO
         {
             GameForm.FormClosed += GameForm_FormClosed;
             GameForm.GamePanel.MouseMove += GamePanel_MouseMove;
+            GameForm.KeyDown += GameForm_KeyDown;
+        }
+
+        private void GameForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.M)
+                Game.GameState.CurrentPlayer.Parts[0].Mass += 10;
+
+            if (e.KeyCode == Keys.N && Game.GameState.CurrentPlayer.Parts[0].Mass > 10)
+                Game.GameState.CurrentPlayer.Parts[0].Mass -= 10;
         }
 
         private void GamePanel_MouseMove(object sender, MouseEventArgs e)

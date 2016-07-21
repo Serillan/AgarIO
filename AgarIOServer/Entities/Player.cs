@@ -14,38 +14,57 @@ namespace AgarIOServer.Entities
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
         [ProtoBuf.ProtoIgnore]
-        new public double X
+        new public float X
         {
             get
             {
-                double x = 0;
+                float x = 0;
                 foreach (var part in Parts)
                     x += part.X;
                 return x / Parts.Count;
             }
         }
         [ProtoBuf.ProtoIgnore]
-        new public double Y
+        new public float Y
         {
             get
             {
-                double y = 0;
+                float y = 0;
                 foreach (var part in Parts)
-                    y += part.X;
+                    y += part.Y;
                 return y / Parts.Count;
+            }
+        }
+        [ProtoBuf.ProtoIgnore]
+        new public int Mass
+        {
+            get
+            {
+                var mass = 0;
+                foreach (var part in Parts)
+                    mass += part.Mass;
+                return mass;
+            }
+        }
+
+        [ProtoBuf.ProtoIgnore]
+        new public float Radius
+        {
+            get
+            {
+                return 10 * (float)Math.Sqrt(Mass / Math.PI);
             }
         }
 
         public Player(string name)
         {
             this.Name = name;
-            this.Mass = 5;
 
             this.Parts = new List<PlayerPart>();
             var part = new PlayerPart();
-            part.Mass = Mass;
-            part.X = Game.RandomG.Next(0, Game.MaxLocationX);
-            part.Y = Game.RandomG.Next(0, Game.MaxLocationY);
+            part.Mass = 10;
+            part.X = Game.RandomG.Next((int)(Math.Round(this.Radius)), Game.MaxLocationX);
+            part.Y = Game.RandomG.Next((int)(Math.Round(this.Radius)), Game.MaxLocationY);
             Parts.Add(part);
         }
 

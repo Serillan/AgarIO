@@ -20,5 +20,7 @@ namespace AgarIO
         public List<Virus> Viruses { get; set; }
         [ProtoBuf.ProtoIgnore]
         public Player CurrentPlayer { get; set; }
+        [ProtoBuf.ProtoMember(28)]
+        public int Version { get; set; }
     }
 }

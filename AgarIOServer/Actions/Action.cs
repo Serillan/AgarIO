@@ -8,11 +8,11 @@ namespace AgarIOServer.Actions
 {
     abstract class Action
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
         public string PlayerName { get; set; }
 
-        public Action(double x, double y, string playerName)
+        public Action(float x, float y, string playerName)
         {
             this.X = x;
             this.Y = y;

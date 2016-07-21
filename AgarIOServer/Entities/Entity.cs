@@ -16,15 +16,22 @@ namespace AgarIOServer.Entities
         [ProtoBuf.ProtoMember(1)]
         public int Mass { get; set; }
         [ProtoBuf.ProtoIgnore]
-        public double Radius {
+        public float Radius
+        {
             get
             {
-                return Math.Sqrt(Mass);
+                //return (20 + NthRoot(Mass, 5));
+                return 10 * (float)Math.Sqrt(Mass / Math.PI);
             }
         }
         [ProtoBuf.ProtoMember(3)]
-        public double X { get; set; }
+        public float X { get; set; }
         [ProtoBuf.ProtoMember(4)]
-        public double Y { get; set; }
+        public float Y { get; set; }
+
+        private float NthRoot(float A, int N)
+        {
+            return (float)(Math.Pow(A, 1.0 / N));
+        }
     }
 }

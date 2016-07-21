@@ -16,12 +16,14 @@ namespace AgarIOServer
         public List<Food> Food { get; set; }
         [ProtoBuf.ProtoMember(3)]
         public List<Virus> Viruses { get; set; }
-
+        [ProtoBuf.ProtoMember(28)]
+        public int Version { get; set; }
         public GameState()
         {
             Players = new List<Player>();
             Food = new List<Food>();
             Viruses = new List<Virus>();
+            Version = 0;
         }
     }
 }

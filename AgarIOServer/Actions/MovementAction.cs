@@ -8,7 +8,7 @@ namespace AgarIOServer.Actions
 {
     class MovementAction : Action
     {
-        public MovementAction(double x, double y, string playerName) : base(x, y, playerName)
+        public MovementAction(float x, float y, string playerName) : base(x, y, playerName)
         {
         }
 

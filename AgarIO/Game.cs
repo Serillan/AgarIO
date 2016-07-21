@@ -21,13 +21,15 @@ namespace AgarIO
         LoginManager LoginManager;
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
-        GameState GameState;
+        public GameState GameState;
         string PlayerName;
         Timer GameTimer;
 
-        public const int MaxLocationX = 2000;
-        public const int MaxLocationY = 2000;
-        const int GameLoopInterval = 16;
+        public const int MaxLocationX = 2400;
+        public const int MaxLocationY = 2400;
+        const int GameLoopInterval = 30;
+
+        public static int Time;
 
 
         /// <summary>
@@ -50,40 +52,48 @@ namespace AgarIO
             GraphicsEngine.StartGraphics();
             ServerConnection.StartReceiving(OnReceiveMessage);
             IsRunning = true;
+            Time = 0;
             StartLoop();
         }
 
         private async Task StartLoop()
         {
-            //Task.Factory.StartNew(new System.Action(() => Loop2()));
-            
+            Task.Factory.StartNew((System.Action)Loop2, TaskCreationOptions.LongRunning);
+            /*
             GameTimer = new Timer();
             GameTimer.Interval = GameLoopInterval;
             GameTimer.Elapsed += Loop;
             GameTimer.Start();
-            
+            */
         }
 
         private void Loop(object sender, ElapsedEventArgs e)
         {
             if (GameState != null)
             {
+                Time++;
                 new MovementAction(InputManager.MousePosition).Process(GameState);
                 GraphicsEngine.Render(GameState);
             }
         }
 
+        long a = 0, b = 0;
+
         private void Loop2()
         {
-            var a = Stopwatch.GetTimestamp();
+            long delta = 0;
             while (true)
             {
-                var b = Stopwatch.GetTimestamp();
-                var delta = 1000 * (b - a) / Stopwatch.Frequency;
-                if (GameState != null && delta > GameLoopInterval)
+                b = Stopwatch.GetTimestamp();
+                delta = 1000 * (b - a) / Stopwatch.Frequency;
+                if (delta >= GameLoopInterval)
                 {
-                    new MovementAction(InputManager.MousePosition).Process(GameState);
-                    GraphicsEngine.Render(GameState);
+                    if (GameState != null)
+                    {
+                        Time++;
+                        new MovementAction(InputManager.MousePosition).Process(GameState);
+                        GraphicsEngine.Render(GameState);
+                    }
                     a = Stopwatch.GetTimestamp();
                 }
             }
@@ -98,6 +108,10 @@ namespace AgarIO
                 case "STOP":
                     Close(msg.Substring(5));
                     break;
+              //  case "SET_POSITION":
+              //      GameState.CurrentPlayer.p
+              //      break;
+
                 default:       // it might be serialized game state
                     TryLoadState(msg);
                     break;
@@ -110,9 +124,22 @@ namespace AgarIO
             MemoryStream stream = new MemoryStream(data);
             try
             {
+                Player oldCurrentPlayer = null;
+                if (GameState?.CurrentPlayer != null)
+                    oldCurrentPlayer = GameState.CurrentPlayer;
+
                 var state = Serializer.Deserialize<GameState>(stream);
+                if (GameState != null && state.Version < GameState.Version)
+                    return;
                 this.GameState = state;
-                state.CurrentPlayer = state.Players.Find(p => p.Name == PlayerName);
+                
+                
+                var current = state.Players.Find(p => p.Name == PlayerName);
+                if (oldCurrentPlayer != null)
+                    current.Parts = oldCurrentPlayer.Parts; // prediction
+                state.CurrentPlayer = current;
+                
+
                 // TODO - server has to add player to the state!
                 //this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
                 //Debug.WriteLine("Received new state!");

@@ -27,6 +27,7 @@ namespace AgarIOServer
     class ClientConnection : IDisposable
     {
         public string PlayerName { get; set; }
+        public int LastMovementTime { get; set; }
         public Boolean IsClosed { get; set; }
 
         UdpClient UdpClient;
@@ -52,6 +53,7 @@ namespace AgarIOServer
                     
                     conn.UdpClient.Connect(connectionResult.RemoteEndPoint.Address, port);
                     conn.PlayerName = tokens[2];
+                    conn.LastMovementTime = 0;
                     conn.UdpListener = new UdpClient(new IPEndPoint(connectionResult.RemoteEndPoint.Address, 0));
                 }
                 else

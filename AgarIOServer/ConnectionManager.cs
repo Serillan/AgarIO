@@ -10,7 +10,7 @@ namespace AgarIOServer
 {
     class ConnectionManager
     {
-        List<ClientConnection> Connections { get; set; }
+        public List<ClientConnection> Connections { get; set; }
         public Action<string, string> PlayerMessageHandler { get; set; }
 
         public async Task StartListeningAsync()
@@ -38,7 +38,7 @@ namespace AgarIOServer
             while (!conn.IsClosed)
             {
                 var receiveTask = conn.ReceiveAsync();
-                var task = await Task.WhenAny(receiveTask, Task.Delay(5000));
+                var task = await Task.WhenAny(receiveTask, Task.Delay(50000));
                 if (task == receiveTask)
                 {
                     var msg = receiveTask.Result;
@@ -84,6 +84,14 @@ namespace AgarIOServer
                     client.SendBinaryAsync(data);
                 }
             }
+        }
+
+        public void SendToClient(string name, string msg)
+        {
+            ClientConnection conn = null;
+            lock (Connections)
+                conn = Connections.Find(p => p.PlayerName == name);
+            conn.SendAsync(msg);
         }
 
         public void EndClientConnection(ClientConnection client)
