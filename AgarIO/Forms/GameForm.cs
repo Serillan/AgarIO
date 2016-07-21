@@ -53,7 +53,7 @@ namespace AgarIO.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            var a = Stopwatch.GetTimestamp();
+            //var a = Stopwatch.GetTimestamp();
             base.OnPaint(e);
             /*
             if (Display != null)

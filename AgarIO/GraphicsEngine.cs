@@ -46,7 +46,7 @@ namespace AgarIO
             GamePanel.Resize += GamePanel_Resize;
             GamePanel.Buffer = new Bitmap(GamePanel.Width, GamePanel.Height);
             ImageGraphics = Graphics.FromImage(GamePanel.Buffer);
-            MatrixPen = new Pen(Color.FromArgb(25, 25, 25), 10);
+            MatrixPen = new Pen(Color.FromArgb(10, 10, 10), 10);
             GamePanel.Paint += GamePanel_Paint;
 
         }
