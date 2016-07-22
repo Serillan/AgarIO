@@ -18,6 +18,7 @@ namespace AgarIOServer
             Connections = new List<ClientConnection>();
             while (true)
             {
+                Console.WriteLine("1");
                 ClientConnection newConnection = await ClientConnection.AcceptClientAsync();
                 lock (Connections)
                 {
@@ -30,6 +31,7 @@ namespace AgarIOServer
                     PlayerMessageHandler(newConnection.PlayerName, "CONNECTED");
                 }
                 ProcessClientAsync(newConnection);
+                Console.WriteLine("2");
             }
         }
 

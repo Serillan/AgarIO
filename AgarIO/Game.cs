@@ -27,7 +27,7 @@ namespace AgarIO
 
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
-        const int GameLoopInterval = 30;
+        const int GameLoopInterval = 16;
 
         public static int Time;
 
@@ -161,7 +161,7 @@ namespace AgarIO
         public void Close(string msg)
         {
             IsRunning = false;
-            GameTimer.Stop();
+            //GameTimer.Stop();
             ServerConnection.SendAsync("STOP").ContinueWith(new Action<Task>(t => {
                 ServerConnection.Dispose();
             }));

@@ -13,9 +13,7 @@ namespace AgarIO
 
     class ServerConnection : IDisposable
     {
-        UdpClient UdpListener;
         UdpClient UdpServer;
-        const int ClientPort = 11020;
         const int LoginServerPort = 11028;
 
         /// <summary>
@@ -28,34 +26,30 @@ namespace AgarIO
         public static async Task<ServerConnection> ConnectAsync(IPAddress adress, string playerName)
         {
             ServerConnection conn = new ServerConnection();
-            conn.UdpListener = new UdpClient(new IPEndPoint(IPAddress.Any, 0)); // listening
-            conn.UdpServer = new UdpClient();
+            conn.UdpServer = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
             conn.UdpServer.Connect(adress, LoginServerPort);                 // for writing to server
-            Debug.WriteLine((conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port);
 
             Debug.WriteLine("CONNECTING");
-
             var task = conn.ReceiveAsync();
             string res;
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 5; i++)
             {
-                await conn.SendAsync(String.Format("CONNECT {0} {1}", (conn.UdpListener.Client.LocalEndPoint as IPEndPoint).Port, playerName));
+                await conn.SendAsync(String.Format("CONNECT {0}", playerName)); // TODO - name with whitespace
 
-                if (await Task.WhenAny(task, Task.Delay(100)) == task)
+                if (await Task.WhenAny(task, Task.Delay(1000)) == task)
                 {
                     res = task.Result;
                     if (res.Split()[0] == "CONNECTED")
                     {
                         conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
+                        for (int j = 0; j < 3; j++)
+                            conn.SendAsync("ACK");
                         return conn;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("error");
                     }
                 }
             }
+
             conn.Dispose();
             throw new TimeoutException("Cannot connect to the server!");
 
@@ -69,7 +63,7 @@ namespace AgarIO
 
         public async Task<string> ReceiveAsync()
         {
-            var res = await UdpListener.ReceiveAsync();
+            var res = await UdpServer.ReceiveAsync();
             var message = Encoding.Default.GetString(res.Buffer);
             return message;
 
@@ -77,12 +71,12 @@ namespace AgarIO
 
         public async Task<byte[]> ReceiveBinaryAsync()
         {
-            return (await UdpListener.ReceiveAsync()).Buffer;
+            return (await UdpServer.ReceiveAsync()).Buffer;
         }
 
         public async Task SendBinaryAsync(byte[] data)
         {
-            await UdpListener.SendAsync(data, data.Length);
+            await UdpServer.SendAsync(data, data.Length);
         }
 
         public async Task StartReceiving(Action<string> handler)
@@ -90,7 +84,7 @@ namespace AgarIO
             while (true)
             {
                 var receiveTask = ReceiveAsync();
-                if (await Task.WhenAny(receiveTask, Task.Delay(50000)) == receiveTask)
+                if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
                 {
                     handler(receiveTask.Result);
                 }
@@ -101,7 +95,6 @@ namespace AgarIO
 
         public void Dispose()
         {
-            UdpListener.Close();
             UdpServer.Close();
         }
 

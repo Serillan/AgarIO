@@ -69,8 +69,6 @@ namespace AgarIOServer
             }
 
         }
-
-
         private void ProcessClientMessage(string playerName, string msg)
         {
             string[] tokens = msg.Split();
