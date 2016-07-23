@@ -5,6 +5,7 @@ using System.Linq;
 using ProtoBuf;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace AgarIOServer
 {
@@ -18,8 +19,7 @@ namespace AgarIOServer
             Connections = new List<ClientConnection>();
             while (true)
             {
-                Console.WriteLine("1");
-                ClientConnection newConnection = await ClientConnection.AcceptClientAsync();
+                ClientConnection newConnection = await ClientConnection.AcceptClientAsync(IsConnectionAllowed);
                 lock (Connections)
                 {
                     if (Connections.Any(c => c.PlayerName == newConnection.PlayerName))
@@ -31,7 +31,6 @@ namespace AgarIOServer
                     PlayerMessageHandler(newConnection.PlayerName, "CONNECTED");
                 }
                 ProcessClientAsync(newConnection);
-                Console.WriteLine("2");
             }
         }
 
@@ -40,19 +39,18 @@ namespace AgarIOServer
             while (!conn.IsClosed)
             {
                 var receiveTask = conn.ReceiveAsync();
-                var task = await Task.WhenAny(receiveTask, Task.Delay(50000));
+                var task = await Task.WhenAny(receiveTask, Task.Delay(5000));
                 if (task == receiveTask)
                 {
                     var msg = receiveTask.Result;
-                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
+                    Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
                     PlayerMessageHandler(conn.PlayerName, msg);
                 }
                 else // timeout
                 {
                     conn.SendAsync("STOP TIMEOUT");
-                    PlayerMessageHandler(conn.PlayerName, "STOP");
                     Console.WriteLine("Stopping player {0} because of timeout!", conn.PlayerName);
-                    EndClientConnection(conn);
+                    PlayerMessageHandler(conn.PlayerName, "STOP");
                     return;
                 }
             }
@@ -98,9 +96,10 @@ namespace AgarIOServer
 
         public void EndClientConnection(ClientConnection client)
         {
+            client.IsClosed = true;
             lock (Connections)
                 Connections.Remove(client);
-            client.IsClosed = true;
+            Console.WriteLine($"Stopping player {client.PlayerName}!");
             client.Dispose();
         }
 
@@ -114,15 +113,27 @@ namespace AgarIOServer
             
         }
 
+        private bool IsConnectionAllowed(string playerName, IPEndPoint playerEndPoint, out string outputMessage)
+        {
+            var nameAlreadyUsed = Connections.Exists(p => p.PlayerName == playerName);
+            if (nameAlreadyUsed)
+            {
+                outputMessage = $"Name {playerName} is already being used by another player!";
+                return false;
+            }
+            else // ALLOWED
+            {
+                outputMessage = "";
+                return true;
+            }
+        }
+
         // TODO : state size is higher than 500B -> fragmentation needed!
-        public async void SendToAllClients(GameState state)
+        public void SendToAllClients(GameState state)
         {
             var stream = new MemoryStream();
             Serializer.Serialize(stream, state);
-            //Console.WriteLine("Sending state with size : {0}B", stream.ToArray().Length);
             stream.Seek(0, SeekOrigin.Begin);
-            var s = Serializer.Deserialize<GameState>(stream);
-
             SendToAllClients(stream.ToArray());
         }
     }

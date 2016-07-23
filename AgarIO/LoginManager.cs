@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Forms;
+using System.Diagnostics;
 
 namespace AgarIO
 {
@@ -33,7 +34,16 @@ namespace AgarIO
                 //connection = await ServerConnection.ConnectAsync(IPAddress.Parse("178.40.89.228"), playerName);
             } catch (Exception ex)
             {
-                loginForm.InfoLabel.Text = ex.Message;
+                Debug.WriteLine(ex.InnerException != null);
+                Debug.WriteLine(ex.Message);
+
+                if (ex.InnerException != null && ex.InnerException.Message ==
+                    "An existing connection was forcibly closed by the remote host")
+                    loginForm.InfoLabel.Text = "Cannot connect to the server!";
+                else
+                {
+                    loginForm.InfoLabel.Text = ex.Message;
+                }
                 return;
             }
 

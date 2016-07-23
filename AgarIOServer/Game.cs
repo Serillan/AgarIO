@@ -79,9 +79,9 @@ namespace AgarIOServer
                 switch (tokens[0])
                 {
                     case "STOP":
-                        ConnectionManager.EndClientConnection(playerName);
                         lock (GameState)
                             GameState.Players.RemoveAll(p => p.Name == playerName);
+                        ConnectionManager.EndClientConnection(playerName);
                         break;
                     case "CONNECTED":
                         Player newPlayer = new Player(playerName);

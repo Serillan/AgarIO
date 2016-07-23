@@ -12,21 +12,19 @@ namespace AgarIOServer
     {
         public const int LoginServerPort = 11028;
 
-        private static LoginServer server;
-
         private LoginServer(IPEndPoint ip) : base(ip) { }
 
         public static LoginServer GetNewInstance()
         {
-            server = new LoginServer(new IPEndPoint(IPAddress.Any, LoginServerPort));
+            var server = new LoginServer(new IPEndPoint(IPAddress.Any, LoginServerPort));
             return server;
         }
 
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
-            server.Send(bytes, bytes.Length);
-            //await UdpClient.SendAsync(bytes, bytes.Length);
+            //server.Send(bytes, bytes.Length);
+            await SendAsync(bytes, bytes.Length);
         }
 
     }
@@ -39,39 +37,47 @@ namespace AgarIOServer
 
         UdpClient UdpClient;
 
-        public static async Task<ClientConnection> AcceptClientAsync()
+        public delegate bool ClientAuthorizer(string playerName, IPEndPoint endPoint, out string outputMessage);
+
+        public static async Task<ClientConnection> AcceptClientAsync(ClientAuthorizer clientAuthorizer)
         {
             ClientConnection conn = new ClientConnection();
             var loginServer = LoginServer.GetNewInstance();
             conn.IsClosed = false;
             conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
+
             while (true)
             {
                 while (true)
                 {
                     var connectionResult = await loginServer.ReceiveAsync();
                     var message = GetMessageFromConnectionResult(connectionResult);
-                    Console.WriteLine(message.Split().Length);
-                    Console.WriteLine(message.Split()[0]);
-                    Console.WriteLine(message.Split()[0] == "CONNECT");
-                    int port = -1;
 
                     if (message.Split().Length == 2 && message.Split()[0] == "CONNECT")
                     {
-                        // TODO check whether the name is already in use
                         var tokens = message.Split();
+                        var name = tokens[1];
+                        string authorizerOutputMessage;
 
-                        Console.WriteLine($"{connectionResult.RemoteEndPoint.Address}:{connectionResult.RemoteEndPoint.Port}");
-                        loginServer.Connect(connectionResult.RemoteEndPoint);
-                        conn.PlayerName = tokens[1];
-                        conn.LastMovementTime = 0;
-                        Console.WriteLine("OK");
-                        break;
+                        if (clientAuthorizer(name, connectionResult.RemoteEndPoint, out authorizerOutputMessage))
+                        {
+                            loginServer.Connect(connectionResult.RemoteEndPoint);
+                            conn.PlayerName = tokens[1];
+                            conn.LastMovementTime = 0;
+                            break;
+                        }
+                        else
+                        {
+                            loginServer.Connect(connectionResult.RemoteEndPoint);
+                            Console.WriteLine("Connection not allowed for {0}:{1} with desired name {2}",
+                                connectionResult.RemoteEndPoint.Address, connectionResult.RemoteEndPoint.Port, name);
+                            await loginServer.SendAsync($"ERROR {authorizerOutputMessage}");
+                            loginServer.Dispose();
+                            loginServer = LoginServer.GetNewInstance();
+                        }
                     }
                 }
 
-                //Console.WriteLine("Player {0} with IP Adress {1}:{2} has succesfully connected!",
-                //    conn.PlayerName, connectionResult.RemoteEndPoint.Address, port);
                 for (int i = 0; i < 3; i++)
                 {
                     loginServer.SendAsync("CONNECTED " + (conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port);
@@ -83,6 +89,7 @@ namespace AgarIOServer
                         if (message == "ACK")
                         {
                             conn.UdpClient.Connect(connectionResult.Result.RemoteEndPoint);
+                            //Console.WriteLine($"{connectionResult.Result.RemoteEndPoint.Address}:{connectionResult.Result.RemoteEndPoint.Port} has connected!");
                             loginServer.Dispose();
                             return conn;
                         }
@@ -94,8 +101,8 @@ namespace AgarIOServer
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
-            UdpClient.Send(bytes, bytes.Length);
-            //await UdpClient.SendAsync(bytes, bytes.Length);
+            //UdpClient.Send(bytes, bytes.Length);
+            await UdpClient.SendAsync(bytes, bytes.Length);
         }
 
         public async Task<string> ReceiveAsync()
@@ -116,7 +123,8 @@ namespace AgarIOServer
 
         public void Dispose()
         {
-            UdpClient.Close();
+            if (UdpClient != null)
+                UdpClient.Close();
         }
 
         public static string GetMessageFromConnectionResult(UdpReceiveResult res)

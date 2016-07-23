@@ -15,6 +15,7 @@ namespace AgarIO
     {
         UdpClient UdpServer;
         const int LoginServerPort = 11028;
+        bool IsClosed;
 
         /// <summary>
         /// 
@@ -28,6 +29,7 @@ namespace AgarIO
             ServerConnection conn = new ServerConnection();
             conn.UdpServer = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
             conn.UdpServer.Connect(adress, LoginServerPort);                 // for writing to server
+            conn.IsClosed = false;
 
             Debug.WriteLine("CONNECTING");
             var task = conn.ReceiveAsync();
@@ -46,6 +48,11 @@ namespace AgarIO
                         for (int j = 0; j < 3; j++)
                             conn.SendAsync("ACK");
                         return conn;
+                    }
+                    if (res.Split()[0] == "ERROR")
+                    {
+                        conn.Dispose();
+                        throw new ArgumentException(res.Substring(6).Trim());
                     }
                 }
             }
@@ -83,6 +90,8 @@ namespace AgarIO
         {
             while (true)
             {
+                if (IsClosed)
+                    break;
                 var receiveTask = ReceiveAsync();
                 if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
                 {
@@ -95,7 +104,8 @@ namespace AgarIO
 
         public void Dispose()
         {
-            UdpServer.Close();
+            UdpServer.Dispose();
+            IsClosed = true;
         }
 
         private ServerConnection() { }

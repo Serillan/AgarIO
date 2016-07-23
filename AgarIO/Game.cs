@@ -84,6 +84,8 @@ namespace AgarIO
             long delta = 0;
             while (true)
             {
+                if (!IsRunning)
+                    break;
                 b = Stopwatch.GetTimestamp();
                 delta = 1000 * (b - a) / Stopwatch.Frequency;
                 if (delta >= GameLoopInterval)
@@ -102,6 +104,7 @@ namespace AgarIO
         private void OnReceiveMessage(string msg)
         {
             var tokens = msg.Split();
+
             //Debug.WriteLine($"MSG: {msg}");
             switch (tokens[0])
             {

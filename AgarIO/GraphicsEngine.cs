@@ -111,10 +111,6 @@ namespace AgarIO
         {
             this.state = state;
             GamePanel.Invalidate();
-            
         }
-       
-        
-
     }
 }
