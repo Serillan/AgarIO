@@ -18,6 +18,7 @@ namespace AgarIOServer
         const int ServerLoopInterval = 8; // ms
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
+        public const int ClientLoopInterval = 16;
         public static Random RandomG = new Random();
         ConnectionManager ConnectionManager;
         GameState GameState;

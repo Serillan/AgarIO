@@ -24,6 +24,7 @@ namespace AgarIO
         public GameState GameState;
         string PlayerName;
         Timer GameTimer;
+        bool ValidPrediction;
 
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
@@ -111,6 +112,9 @@ namespace AgarIO
                 case "STOP":
                     Close(msg.Substring(5));
                     break;
+                case "INVALID_ACTION":
+                    ValidPrediction = false;
+                    break;
               //  case "SET_POSITION":
               //      GameState.CurrentPlayer.p
               //      break;
@@ -131,21 +135,23 @@ namespace AgarIO
                 if (GameState?.CurrentPlayer != null)
                     oldCurrentPlayer = GameState.CurrentPlayer;
 
-                var state = Serializer.Deserialize<GameState>(stream);
+                var commandMessage = Serializer.Deserialize<Commands.CommandMessage>(stream);
+                var command = commandMessage.GetCommand();
+
+                GameState state = null;
+                Debug.WriteLine(command.GetType());
                 if (GameState != null && state.Version < GameState.Version)
                     return;
                 this.GameState = state;
-                
-                
+                ValidPrediction = true;
+
+
+                // current player
                 var current = state.Players.Find(p => p.Name == PlayerName);
-                if (oldCurrentPlayer != null)
+                if (oldCurrentPlayer != null && ValidPrediction)
                     current.Parts = oldCurrentPlayer.Parts; // prediction
                 state.CurrentPlayer = current;
                 
-
-                // TODO - server has to add player to the state!
-                //this.GameState.CurrentPlayer = State.Players.Find(p => p.Name == PlayerName);
-                //Debug.WriteLine("Received new state!");
             } catch (SerializationException ex)
             {
                 Debug.WriteLine("Deserializing error.");

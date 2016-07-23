@@ -43,7 +43,7 @@ namespace AgarIOServer
                 if (task == receiveTask)
                 {
                     var msg = receiveTask.Result;
-                    Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
+                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
                     PlayerMessageHandler(conn.PlayerName, msg);
                 }
                 else // timeout
@@ -131,9 +131,17 @@ namespace AgarIOServer
         // TODO : state size is higher than 500B -> fragmentation needed!
         public void SendToAllClients(GameState state)
         {
+            var command = new Commands.Move();
+            //var command = new Commands.UpdateState(state);
+            //var message = new Commands.CommandMessage(command);
             var stream = new MemoryStream();
-            Serializer.Serialize(stream, state);
+
+            Serializer.Serialize(stream, command);
             stream.Seek(0, SeekOrigin.Begin);
+
+            var commandD = Serializer.Deserialize<Commands.Command>(stream);
+            Console.WriteLine(commandD.GetType());
+
             SendToAllClients(stream.ToArray());
         }
     }

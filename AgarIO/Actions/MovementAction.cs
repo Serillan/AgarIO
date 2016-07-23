@@ -41,6 +41,7 @@ namespace AgarIO.Actions
                 //Game.ServerConnection.SendAsync($"MOVE {X} {Y}");
 
                 Game.ServerConnection.SendAsync($"MOVE {Game.Time} {nextX} {nextY}");
+                
                 //apply
                 part.X = nextX;
                 part.Y = nextY;

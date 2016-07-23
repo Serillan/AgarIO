@@ -52,6 +52,13 @@
     <Compile Include="Actions\FoodAction.cs" />
     <Compile Include="Actions\MovementAction.cs" />
     <Compile Include="ClientConnection.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\CommandMessage.cs" />
+    <Compile Include="Commands\Divide.cs" />
+    <Compile Include="Commands\Invalidate.cs" />
+    <Compile Include="Commands\Move.cs" />
+    <Compile Include="Commands\Stop.cs" />
+    <Compile Include="Commands\UpdateState.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="Entities\Entity.cs" />
     <Compile Include="Entities\Food.cs" />
