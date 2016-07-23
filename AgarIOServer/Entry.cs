@@ -17,7 +17,7 @@ namespace AgarIOServer
             
 
             Console.WriteLine("Starting game loop");
-            Game game = new Game(manager);
+            GameServer game = new GameServer(manager);
             game.Start();
 
 

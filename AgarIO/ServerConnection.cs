@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ProtoBuf;
+using System.IO;
 
 namespace AgarIO
 {
@@ -45,7 +47,7 @@ namespace AgarIO
                     if (res.Split()[0] == "CONNECTED")
                     {
                         conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
-                        for (int j = 0; j < 3; j++)
+                        for (int j = 0; j < 1; j++)  // TODO 3 should be there
                             conn.SendAsync("ACK");
                         return conn;
                     }
@@ -76,29 +78,60 @@ namespace AgarIO
 
         }
 
+        public async Task<Commands.Command> ReceiveCommandAsync()
+        {
+            while (true)
+            {
+                var data = await ReceiveBinaryAsync();
+                var stream = new MemoryStream(data);
+                try
+                {
+                    return Serializer.Deserialize<Commands.Command>(stream);
+                }
+                catch (ProtoException)
+                {
+                    // ignore this type of exception (multiple ACK ...), wait for first command
+                }
+            }
+        }
+
         public async Task<byte[]> ReceiveBinaryAsync()
         {
             return (await UdpServer.ReceiveAsync()).Buffer;
         }
 
-        public async Task SendBinaryAsync(byte[] data)
+        public async Task SendAsync(byte[] data)
         {
             await UdpServer.SendAsync(data, data.Length);
         }
 
-        public async Task StartReceiving(Action<string> handler)
+        public async Task SendAsync(Commands.Command command)
+        {
+            var stream = new MemoryStream();
+            Serializer.Serialize(stream, command);
+            stream.Seek(0, SeekOrigin.Begin);
+            var res = SendAsync(stream.ToArray());
+            await res;
+
+            Debug.WriteLine("Sending {0}", command.GetType());
+
+            if (res.Exception != null)
+                Debug.WriteLine(res.Exception);
+        }
+
+        public async Task StartReceiving(Action<Commands.Command> handler)
         {
             while (true)
             {
                 if (IsClosed)
                     break;
-                var receiveTask = ReceiveAsync();
-                if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
+                var receiveTask = ReceiveCommandAsync();
+                if (await Task.WhenAny(receiveTask, Task.Delay(50000)) == receiveTask)
                 {
                     handler(receiveTask.Result);
                 }
                 else
-                    handler("STOP Server has stopped responding");
+                    handler(new Commands.Stop("Server has stopped responding"));
             }
         }
 

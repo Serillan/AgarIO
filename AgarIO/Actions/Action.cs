@@ -18,6 +18,6 @@ namespace AgarIO.Actions
             this.Y = MousePosition.Y;
         }
 
-        public abstract void Process(GameState CurrentState);
+        public abstract void Process(Game game);
     }
 }

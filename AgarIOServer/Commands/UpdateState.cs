@@ -12,14 +12,6 @@ namespace AgarIOServer.Commands
         [ProtoBuf.ProtoMember(1)]
         public GameState GameState { get; set; }
 
-        public override CommandType CommandType
-        {
-            get
-            {
-                return CommandType.Update;
-            }
-        }
-
         public UpdateState(GameState state)
         {
             this.GameState = state;

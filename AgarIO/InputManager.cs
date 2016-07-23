@@ -43,7 +43,6 @@ namespace AgarIO
 
         private void GamePanel_MouseMove(object sender, MouseEventArgs e)
         {
-            Debug.WriteLine("change");
             MousePosition = GameForm.GamePanel.PointToClient(Cursor.Position);
         }
 

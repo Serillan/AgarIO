@@ -55,7 +55,6 @@
     <Compile Include="Actions\FoodAction.cs" />
     <Compile Include="Actions\MovementAction.cs" />
     <Compile Include="Commands\Command.cs" />
-    <Compile Include="Commands\CommandMessage.cs" />
     <Compile Include="Commands\Divide.cs" />
     <Compile Include="Commands\Invalidate.cs" />
     <Compile Include="Commands\Move.cs" />

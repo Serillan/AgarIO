@@ -9,13 +9,5 @@ namespace AgarIOServer.Commands
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {
-        [ProtoBuf.ProtoIgnore]
-        public override CommandType CommandType
-        {
-            get
-            {
-                return CommandType.Divide;
-            }
-        }
     }
 }

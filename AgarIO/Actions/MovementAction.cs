@@ -14,11 +14,18 @@ namespace AgarIO.Actions
         }
         // TODO: pre zlepsenie sa bude posielat movement a ignorovat co vrati server
         // jedine ak posle FALSE a poziciu hraca, tak si zmenim vlastnu poziciu
-        public override void Process(GameState CurrentState)
+        public override void Process(Game game)
         {
-            if (CurrentState?.CurrentPlayer?.Parts == null)
+            var state = game.GameState;
+
+            if (state?.CurrentPlayer?.Parts == null)
                 return;
-            foreach (var part in CurrentState.CurrentPlayer.Parts)
+
+            var command = new Commands.Move();
+            command.Time = game.Time;
+            command.Movement = new List<Tuple<int, float, float>>();
+
+            foreach (var part in state.CurrentPlayer.Parts)
             {
                 float vX = (float)(X - GraphicsEngine.GamePanelWidth / 2);
                 float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
@@ -37,15 +44,14 @@ namespace AgarIO.Actions
                 if (nextY > Game.MaxLocationY || nextY < 0)
                     nextY = part.Y;
 
-
-                //Game.ServerConnection.SendAsync($"MOVE {X} {Y}");
-
-                Game.ServerConnection.SendAsync($"MOVE {Game.Time} {nextX} {nextY}");
+                command.Movement.Add(new Tuple<int, float, float>(part.Identifier, nextX, nextY));
                 
-                //apply
+                //apply (prediction)
                 part.X = nextX;
                 part.Y = nextY;
             }
+
+            game.ServerConnection.SendAsync(command);
         }
     }
 }

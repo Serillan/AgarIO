@@ -9,13 +9,9 @@ namespace AgarIO.Commands
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {
-        [ProtoBuf.ProtoIgnore]
-        public override CommandType CommandType
+        public override void Process(Game game)
         {
-            get
-            {
-                return CommandType.Divide;
-            }
+            throw new NotImplementedException();
         }
     }
 }

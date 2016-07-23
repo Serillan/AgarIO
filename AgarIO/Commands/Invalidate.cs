@@ -9,13 +9,9 @@ namespace AgarIO.Commands
     [ProtoBuf.ProtoContract]
     class Invalidate : Command
     {
-        [ProtoBuf.ProtoIgnore]
-        public override CommandType CommandType
+        public override void Process(Game game)
         {
-            get
-            {
-                return CommandType.Invalidate;
-            }
+            throw new NotImplementedException();
         }
     }
 }

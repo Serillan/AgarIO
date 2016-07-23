@@ -54,6 +54,8 @@ namespace AgarIO
 
         private void DrawGame(Graphics g)
         {
+            if (state == null || state.CurrentPlayer == null)
+                return;
             g.Clear(Color.Black);
             TransformScene(g);
             DrawMatrix(g);

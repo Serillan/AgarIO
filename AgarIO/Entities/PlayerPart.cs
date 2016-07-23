@@ -10,6 +10,9 @@ namespace AgarIO.Entities
     class PlayerPart : Entity
     {
 
+        [ProtoBuf.ProtoMember(1)]
+        public int Identifier { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         public float Speed
         {

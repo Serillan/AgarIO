@@ -11,27 +11,27 @@ using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Entities;
 using AgarIO.Actions;
+using AgarIO.Commands;
 using System.Timers;
+
 
 namespace AgarIO
 {
     class Game
     {
-        public static ServerConnection ServerConnection;
+        public ServerConnection ServerConnection { get; set; }
+        public int Time { get; set; }
+        public GameState GameState { get; set; }
+        public bool IsPredictionValid { get; set; }
+        public string PlayerName { get; set; }
+
         LoginManager LoginManager;
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
-        public GameState GameState;
-        string PlayerName;
-        Timer GameTimer;
-        bool ValidPrediction;
 
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
         const int GameLoopInterval = 16;
-
-        public static int Time;
-
 
         /// <summary>
         /// Used for avoiding multiple game closes.
@@ -51,7 +51,7 @@ namespace AgarIO
         public void Start()
         {
             GraphicsEngine.StartGraphics();
-            ServerConnection.StartReceiving(OnReceiveMessage);
+            ServerConnection.StartReceiving(OnReceiveCommand);
             IsRunning = true;
             Time = 0;
             StartLoop();
@@ -59,30 +59,14 @@ namespace AgarIO
 
         private async Task StartLoop()
         {
-            Task.Factory.StartNew((System.Action)Loop2, TaskCreationOptions.LongRunning);
-            /*
-            GameTimer = new Timer();
-            GameTimer.Interval = GameLoopInterval;
-            GameTimer.Elapsed += Loop;
-            GameTimer.Start();
-            */
+            await Task.Factory.StartNew((System.Action)Loop, TaskCreationOptions.LongRunning);
         }
 
-        private void Loop(object sender, ElapsedEventArgs e)
-        {
-            if (GameState != null)
-            {
-                Time++;
-                new MovementAction(InputManager.MousePosition).Process(GameState);
-                GraphicsEngine.Render(GameState);
-            }
-        }
-
-        long a = 0, b = 0;
-
-        private void Loop2()
+        private void Loop()
         {
             long delta = 0;
+            long a = 0, b = 0;
+
             while (true)
             {
                 if (!IsRunning)
@@ -94,7 +78,7 @@ namespace AgarIO
                     if (GameState != null)
                     {
                         Time++;
-                        new MovementAction(InputManager.MousePosition).Process(GameState);
+                        new MovementAction(InputManager.MousePosition).Process(this);
                         GraphicsEngine.Render(GameState);
                     }
                     a = Stopwatch.GetTimestamp();
@@ -102,77 +86,18 @@ namespace AgarIO
             }
         }
 
-        private void OnReceiveMessage(string msg)
+        private void OnReceiveCommand(Command command)
         {
-            var tokens = msg.Split();
-
-            //Debug.WriteLine($"MSG: {msg}");
-            switch (tokens[0])
-            {
-                case "STOP":
-                    Close(msg.Substring(5));
-                    break;
-                case "INVALID_ACTION":
-                    ValidPrediction = false;
-                    break;
-              //  case "SET_POSITION":
-              //      GameState.CurrentPlayer.p
-              //      break;
-
-                default:       // it might be serialized game state
-                    TryLoadState(msg);
-                    break;
-            }
-        }
-
-        public void TryLoadState(string msg)
-        {
-            byte[] data = Encoding.Default.GetBytes(msg);
-            MemoryStream stream = new MemoryStream(data);
-            try
-            {
-                Player oldCurrentPlayer = null;
-                if (GameState?.CurrentPlayer != null)
-                    oldCurrentPlayer = GameState.CurrentPlayer;
-
-                var commandMessage = Serializer.Deserialize<Commands.CommandMessage>(stream);
-                var command = commandMessage.GetCommand();
-
-                GameState state = null;
-                Debug.WriteLine(command.GetType());
-                if (GameState != null && state.Version < GameState.Version)
-                    return;
-                this.GameState = state;
-                ValidPrediction = true;
-
-
-                // current player
-                var current = state.Players.Find(p => p.Name == PlayerName);
-                if (oldCurrentPlayer != null && ValidPrediction)
-                    current.Parts = oldCurrentPlayer.Parts; // prediction
-                state.CurrentPlayer = current;
-                
-            } catch (SerializationException ex)
-            {
-                Debug.WriteLine("Deserializing error.");
-            } catch (ArgumentNullException ex)
-            {
-                Debug.WriteLine("Couldn't find the current player in the current game state");
-                Close("Error");
-            }
-            catch (NullReferenceException ex)
-            {
-                Debug.WriteLine("Game State is null after deserialization");
-                Close("Error");
-            }
+            command.Process(this);
         }
 
         public void Close(string msg)
         {
             IsRunning = false;
             //GameTimer.Stop();
-            ServerConnection.SendAsync("STOP").ContinueWith(new Action<Task>(t => {
+            ServerConnection.SendAsync(new Stop(msg)).ContinueWith(new Action<Task>(t => {
                 ServerConnection.Dispose();
+                Debug.WriteLine("stopped");
             }));
 
             GraphicsEngine.StopGraphics();

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using ProtoBuf;
+using System.IO;
 
 namespace AgarIOServer
 {
@@ -81,6 +83,7 @@ namespace AgarIOServer
                 for (int i = 0; i < 3; i++)
                 {
                     loginServer.SendAsync("CONNECTED " + (conn.UdpClient.Client.LocalEndPoint as IPEndPoint).Port);
+
                     var connectionResult = conn.UdpClient.ReceiveAsync();
                     if (connectionResult == await Task.WhenAny(Task.Delay(1000), connectionResult))
                     {
@@ -105,6 +108,11 @@ namespace AgarIOServer
             await UdpClient.SendAsync(bytes, bytes.Length);
         }
 
+        public async Task SendAsync(byte[] data)
+        {
+            await UdpClient.SendAsync(data, data.Length);
+        }
+
         public async Task<string> ReceiveAsync()
         {
             var res = await UdpClient.ReceiveAsync();
@@ -113,18 +121,43 @@ namespace AgarIOServer
 
         public async Task<byte[]> ReceiveBinaryAsync()
         {
-            return (await UdpClient.ReceiveAsync()).Buffer;
+            byte[] res = null;
+            res = (await UdpClient.ReceiveAsync()).Buffer;
+            return res;
         }
 
-        public async Task SendBinaryAsync(byte[] data)
+        public async Task<Commands.Command> ReceiveCommandAsync()
         {
-            await UdpClient.SendAsync(data, data.Length);
+            while (true)
+            {
+                var data = await ReceiveBinaryAsync();
+                var stream = new MemoryStream(data);
+                try
+                {
+                    var command = Serializer.Deserialize<Commands.Command>(stream);
+                    //Console.WriteLine("Received {0} command from {1}", command.GetType(), PlayerName);
+                    return command;
+                }
+                catch (ProtoException ex)
+                {
+                    // ignore this type of exception (multiple ACK ...), wait for first command
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+        }
+
+        public async Task SendAsync(Commands.Command command)
+        {
+            var stream = new MemoryStream();
+            Serializer.Serialize(stream, command);
+            stream.Seek(0, SeekOrigin.Begin);
+            await SendAsync(stream.ToArray());
         }
 
         public void Dispose()
         {
             if (UdpClient != null)
-                UdpClient.Close();
+                UdpClient.Dispose();
         }
 
         public static string GetMessageFromConnectionResult(UdpReceiveResult res)

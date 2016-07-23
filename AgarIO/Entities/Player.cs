@@ -11,8 +11,13 @@ namespace AgarIO.Entities
     {
         [ProtoBuf.ProtoMember(1)]
         public string Name { get; set; }
+
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
+
+        [ProtoBuf.ProtoMember(3)]
+        public int LastMovementTime { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         new public float X
         {

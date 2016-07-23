@@ -29,9 +29,9 @@ namespace AgarIO
             string playerName = loginForm.LoginTextBox.Text;
             try
             {
-                connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, playerName);
+                //connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, playerName);
                 //connection = await ServerConnection.ConnectAsync(Dns.GetHostAddresses("gameserver.northeurope.cloudapp.azure.com")[0], playerName);
-                //connection = await ServerConnection.ConnectAsync(IPAddress.Parse("178.40.89.228"), playerName);
+                connection = await ServerConnection.ConnectAsync(IPAddress.Parse("178.40.89.228"), playerName);
             } catch (Exception ex)
             {
                 Debug.WriteLine(ex.InnerException != null);

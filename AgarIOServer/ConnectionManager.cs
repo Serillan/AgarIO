@@ -12,7 +12,8 @@ namespace AgarIOServer
     class ConnectionManager
     {
         public List<ClientConnection> Connections { get; set; }
-        public Action<string, string> PlayerMessageHandler { get; set; }
+        public Action<string, Commands.Command> PlayerCommandHandler { get; set; }
+        public Action<string> NewPlayerHandler { get; set; }
 
         public async Task StartListeningAsync()
         {
@@ -28,7 +29,7 @@ namespace AgarIOServer
                     Console.WriteLine("Player {0} has succesfully connected!",
                        newConnection.PlayerName);
                     Connections.Add(newConnection);
-                    PlayerMessageHandler(newConnection.PlayerName, "CONNECTED");
+                    NewPlayerHandler(newConnection.PlayerName);
                 }
                 ProcessClientAsync(newConnection);
             }
@@ -38,19 +39,19 @@ namespace AgarIOServer
         {
             while (!conn.IsClosed)
             {
-                var receiveTask = conn.ReceiveAsync();
+                var receiveTask = conn.ReceiveCommandAsync();
                 var task = await Task.WhenAny(receiveTask, Task.Delay(5000));
                 if (task == receiveTask)
                 {
-                    var msg = receiveTask.Result;
-                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, msg);
-                    PlayerMessageHandler(conn.PlayerName, msg);
+                    var command = receiveTask.Result;
+                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, command.GetType());
+                    PlayerCommandHandler(conn.PlayerName, command);
                 }
                 else // timeout
                 {
-                    conn.SendAsync("STOP TIMEOUT");
+                    conn.SendAsync(new Commands.Stop());
                     Console.WriteLine("Stopping player {0} because of timeout!", conn.PlayerName);
-                    PlayerMessageHandler(conn.PlayerName, "STOP");
+                    PlayerCommandHandler(conn.PlayerName, new Commands.Stop());
                     return;
                 }
             }
@@ -81,7 +82,7 @@ namespace AgarIOServer
             {
                 foreach (var client in Connections)
                 {
-                    client.SendBinaryAsync(data);
+                    client.SendAsync(data);
                 }
             }
         }
@@ -90,15 +91,37 @@ namespace AgarIOServer
         {
             ClientConnection conn = null;
             lock (Connections)
+            {
                 conn = Connections.Find(p => p.PlayerName == name);
+            }
             conn.SendAsync(msg);
+        }
+
+        public void SendToClient(string name, byte[] data)
+        {
+            ClientConnection conn = null;
+            lock (Connections)
+            {
+                conn = Connections.Find(p => p.PlayerName == name);
+            }
+            conn.SendAsync(data);
+        }
+
+        public void SendToClient(string name, Commands.Command command)
+        {
+            var stream = new MemoryStream();
+            Serializer.Serialize(stream, command);
+            stream.Seek(0, SeekOrigin.Begin);
+            SendToClient(name, stream.ToArray());
         }
 
         public void EndClientConnection(ClientConnection client)
         {
             client.IsClosed = true;
             lock (Connections)
+            {
                 Connections.Remove(client);
+            }
             Console.WriteLine($"Stopping player {client.PlayerName}!");
             client.Dispose();
         }
@@ -128,20 +151,11 @@ namespace AgarIOServer
             }
         }
 
-        // TODO : state size is higher than 500B -> fragmentation needed!
-        public void SendToAllClients(GameState state)
+        public void SendToAllClients(Commands.Command command)
         {
-            var command = new Commands.Move();
-            //var command = new Commands.UpdateState(state);
-            //var message = new Commands.CommandMessage(command);
             var stream = new MemoryStream();
-
             Serializer.Serialize(stream, command);
             stream.Seek(0, SeekOrigin.Begin);
-
-            var commandD = Serializer.Deserialize<Commands.Command>(stream);
-            Console.WriteLine(commandD.GetType());
-
             SendToAllClients(stream.ToArray());
         }
     }

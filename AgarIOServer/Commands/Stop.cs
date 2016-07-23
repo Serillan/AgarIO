@@ -9,13 +9,22 @@ namespace AgarIOServer.Commands
     [ProtoBuf.ProtoContract]
     class Stop : Command
     {
-        [ProtoBuf.ProtoIgnore]
-        public override CommandType CommandType
+        [ProtoBuf.ProtoMember(1)]
+        public string StopMessage { get; set; }
+
+        public override void Process(GameServer gameServer, string playerName)
         {
-            get
-            {
-                return CommandType.Stop;
-            }
+            lock (gameServer.GameState)
+                gameServer.GameState.Players.RemoveAll(p => p.Name == playerName);
+            gameServer.ConnectionManager.EndClientConnection(playerName);
         }
+
+        public Stop() { }
+
+        public Stop(string msg)
+        {
+            StopMessage = msg;
+        }
+
     }
 }

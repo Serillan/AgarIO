@@ -7,24 +7,25 @@ using System.Threading.Tasks;
 using System.IO;
 using AgarIOServer.Entities;
 using AgarIOServer.Actions;
+using AgarIOServer.Commands;
 using System.Timers;
 using System.Diagnostics;
 using System.Threading;
 
 namespace AgarIOServer
 {
-    class Game
+    class GameServer
     {
         const int ServerLoopInterval = 8; // ms
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
         public const int ClientLoopInterval = 16;
         public static Random RandomG = new Random();
-        ConnectionManager ConnectionManager;
-        GameState GameState;
+        public ConnectionManager ConnectionManager { get; set; }
+        public GameState GameState { get; set; }
 
 
-        public Game(ConnectionManager connectionManager)
+        public GameServer(ConnectionManager connectionManager)
         {
             this.ConnectionManager = connectionManager;
         }
@@ -32,7 +33,8 @@ namespace AgarIOServer
         public void Start()
         {
             GameState = GenerateNewGameState();
-            ConnectionManager.PlayerMessageHandler = ProcessClientMessage;
+            ConnectionManager.PlayerCommandHandler = ProcessClientCommand;
+            ConnectionManager.NewPlayerHandler = AddNewPlayer;
             //Timer timer = new Timer();
             //timer.Interval = ServerLoopInterval;
             //timer.Elapsed += ServerLoop;
@@ -46,9 +48,10 @@ namespace AgarIOServer
             GameState state = new GameState();
             return state;
         }
-        long a = 0, b = 0;
+
         private void ServerLoop()
         {
+            long a = 0, b = 0;
             long delta = 0;
             while (true)
             {
@@ -61,7 +64,7 @@ namespace AgarIOServer
                         lock (ConnectionManager.Connections)
                         {
                             GameState.Version++;
-                            ConnectionManager.SendToAllClients(GameState);
+                            ConnectionManager.SendToAllClients(new UpdateState(GameState));
                         }
                     }
                     //Console.WriteLine(1000 * (b - a) / Stopwatch.Frequency);
@@ -70,7 +73,24 @@ namespace AgarIOServer
             }
 
         }
-        private void ProcessClientMessage(string playerName, string msg)
+
+        private void ProcessClientCommand(string playerName, Command command)
+        {
+            command.Process(this, playerName);
+            GameState.Version++;
+            ConnectionManager.SendToAllClients(new UpdateState(GameState));
+        }
+
+        private void AddNewPlayer(string playerName)
+        {
+            Player newPlayer = new Player(playerName);
+            lock (GameState)
+                GameState.Players.Add(newPlayer);
+            GameState.Version++;
+            ConnectionManager.SendToAllClients(new UpdateState(GameState));
+        }
+
+        private void ProcessClientCommand(string playerName, string msg)
         {
             string[] tokens = msg.Split();
             float x = 0, y = 0;
@@ -112,7 +132,7 @@ namespace AgarIOServer
                 }
                 GameState.Version++;
                 lock (ConnectionManager.Connections)
-                    ConnectionManager.SendToAllClients(GameState);
+                    ConnectionManager.SendToAllClients(new UpdateState(GameState));
             }
             
         }

@@ -11,8 +11,13 @@ namespace AgarIOServer.Entities
     {
         [ProtoBuf.ProtoMember(1)]
         public string Name { get; set; }
+
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
+
+        [ProtoBuf.ProtoMember(3)]
+        public int LastMovementTime { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         new public float X
         {
@@ -63,8 +68,9 @@ namespace AgarIOServer.Entities
             this.Parts = new List<PlayerPart>();
             var part = new PlayerPart();
             part.Mass = 10;
-            part.X = Game.RandomG.Next((int)(Math.Round(this.Radius)), Game.MaxLocationX);
-            part.Y = Game.RandomG.Next((int)(Math.Round(this.Radius)), Game.MaxLocationY);
+            part.X = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationX);
+            part.Y = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationY);
+            part.Identifier = 1;
             Parts.Add(part);
         }
 
