@@ -18,7 +18,7 @@ namespace AgarIO.Entities
         {
             get
             {
-                return (10 / NthRoot(Mass, 5));
+                return (20 / NthRoot(Mass, 5));
             }
         }
 

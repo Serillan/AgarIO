@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +16,20 @@ namespace AgarIOServer.Entities
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
 
-        [ProtoBuf.ProtoMember(3)]
+        [ProtoBuf.ProtoIgnore]
         public int LastMovementTime { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public int FirstMovementTime { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public long LastMovementServerTime { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public long FirstMovementServerTime { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public long CreationTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         new public float X
@@ -64,7 +77,6 @@ namespace AgarIOServer.Entities
         public Player(string name)
         {
             this.Name = name;
-
             this.Parts = new List<PlayerPart>();
             var part = new PlayerPart();
             part.Mass = 10;
@@ -72,6 +84,8 @@ namespace AgarIOServer.Entities
             part.Y = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationY);
             part.Identifier = 1;
             Parts.Add(part);
+            this.FirstMovementServerTime = Stopwatch.GetTimestamp();
+            this.FirstMovementTime = 0;
         }
 
         public Player() { }

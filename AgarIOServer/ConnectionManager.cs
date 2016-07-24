@@ -40,7 +40,7 @@ namespace AgarIOServer
             while (!conn.IsClosed)
             {
                 var receiveTask = conn.ReceiveCommandAsync();
-                var task = await Task.WhenAny(receiveTask, Task.Delay(5000));
+                var task = await Task.WhenAny(receiveTask, Task.Delay(50000));
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;

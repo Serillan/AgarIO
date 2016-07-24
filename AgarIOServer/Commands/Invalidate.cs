@@ -9,5 +9,14 @@ namespace AgarIOServer.Commands
     [ProtoBuf.ProtoContract]
     class Invalidate : Command
     {
+        [ProtoBuf.ProtoMember(1)]
+        public string ErrorMessage { get; set; }
+
+        private Invalidate() { }
+
+        public Invalidate(string msg)
+        {
+            ErrorMessage = msg;
+        }
     }
 }

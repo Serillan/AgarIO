@@ -16,10 +16,10 @@ namespace AgarIOServer
 {
     class GameServer
     {
-        const int ServerLoopInterval = 8; // ms
+        public const int GameLoopInterval = 16;
+        public const int ServerLoopInterval = 16; // not used right now 
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
-        public const int ClientLoopInterval = 16;
         public static Random RandomG = new Random();
         public ConnectionManager ConnectionManager { get; set; }
         public GameState GameState { get; set; }
@@ -85,9 +85,21 @@ namespace AgarIOServer
         {
             Player newPlayer = new Player(playerName);
             lock (GameState)
+            {
                 GameState.Players.Add(newPlayer);
+            }
             GameState.Version++;
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
+        }
+
+        public void RemovePlayer(string playerName, string msg)
+        {
+            lock (GameState)
+            {
+                GameState.Players.RemoveAll(p => p.Name == playerName);
+            }
+            ConnectionManager.SendToClient(playerName, new Stop(msg));
+            ConnectionManager.EndClientConnection(playerName);
         }
 
         private void ProcessClientCommand(string playerName, string msg)

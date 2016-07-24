@@ -34,15 +34,20 @@ namespace AgarIO.Actions
                 float size = (float)(Math.Sqrt(vX * vX + vY * vY));
                 if (size == 0)
                     return;
-                vX *= (1 / size);
-                vY *= (1 / size);
+                vX /= size;
+                vY /= size;
 
                 var nextX = part.X + vX * part.Speed;
                 var nextY = part.Y + vY * part.Speed;
-                if (nextX > Game.MaxLocationX || nextX < 0)
-                    nextX = part.X;
-                if (nextY > Game.MaxLocationY || nextY < 0)
-                    nextY = part.Y;
+
+                if (nextX > Game.MaxLocationX)
+                    nextX = Game.MaxLocationX;
+                if (nextX < 0)
+                    nextX = 0;
+                if (nextY > Game.MaxLocationY)
+                    nextY = Game.MaxLocationY;
+                if (nextY < 0)
+                    nextY = 0;
 
                 command.Movement.Add(new Tuple<int, float, float>(part.Identifier, nextX, nextY));
                 

@@ -31,7 +31,7 @@ namespace AgarIO
 
         public const int MaxLocationX = 2400;
         public const int MaxLocationY = 2400;
-        const int GameLoopInterval = 16;
+        const int GameLoopInterval = 30;
 
         /// <summary>
         /// Used for avoiding multiple game closes.
@@ -53,7 +53,7 @@ namespace AgarIO
             GraphicsEngine.StartGraphics();
             ServerConnection.StartReceiving(OnReceiveCommand);
             IsRunning = true;
-            Time = 0;
+            Time = -1;
             StartLoop();
         }
 

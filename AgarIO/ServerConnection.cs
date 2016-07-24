@@ -41,7 +41,7 @@ namespace AgarIO
             {
                 await conn.SendAsync(String.Format("CONNECT {0}", playerName)); // TODO - name with whitespace
 
-                if (await Task.WhenAny(task, Task.Delay(1000)) == task)
+                if (await Task.WhenAny(task, Task.Delay(100000)) == task)
                 {
                     res = task.Result;
                     if (res.Split()[0] == "CONNECTED")
@@ -113,7 +113,7 @@ namespace AgarIO
             var res = SendAsync(stream.ToArray());
             await res;
 
-            Debug.WriteLine("Sending {0}", command.GetType());
+            //Debug.WriteLine("Sending {0}", command.GetType());
 
             if (res.Exception != null)
                 Debug.WriteLine(res.Exception);
