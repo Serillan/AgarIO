@@ -77,9 +77,12 @@ namespace AgarIO
                 {
                     if (GameState != null)
                     {
-                        Time++;
-                        new MovementAction(InputManager.MousePosition).Process(this);
-                        GraphicsEngine.Render(GameState);
+                        lock (this)
+                        {
+                            Time++;
+                            new MovementAction(InputManager.MousePosition).Process(this);
+                            GraphicsEngine.Render(GameState);
+                        }
                     }
                     a = Stopwatch.GetTimestamp();
                 }
@@ -88,7 +91,10 @@ namespace AgarIO
 
         private void OnReceiveCommand(Command command)
         {
-            command.Process(this);
+            lock (this)
+            {
+                command.Process(this);
+            }
         }
 
         public void Close(string msg)

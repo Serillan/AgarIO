@@ -23,9 +23,6 @@ namespace AgarIOServer.Entities
         public int FirstMovementTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public long LastMovementServerTime { get; set; }
-
-        [ProtoBuf.ProtoIgnore]
         public long FirstMovementServerTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]

@@ -21,6 +21,7 @@ namespace AgarIO
         [ProtoBuf.ProtoIgnore]
         public Player CurrentPlayer { get; set; }
         [ProtoBuf.ProtoMember(28)]
-        public int Version { get; set; }
+        public int Version;
+
     }
 }

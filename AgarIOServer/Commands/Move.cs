@@ -24,23 +24,28 @@ namespace AgarIOServer.Commands
         public override void Process(GameServer server, string playerName)
         {
             var state = server.GameState;
-            var player = state.Players.Find(p => p.Name == playerName);
+            Player player = null;
+
+            lock (state.Players)
+            {
+                player = state.Players.Find(p => p.Name == playerName);
+            }
+
             if (Time < player.LastMovementTime)
                 return;
 
             if (player.FirstMovementServerTime == 0)
             {
-                player.LastMovementServerTime = Stopwatch.GetTimestamp();
                 player.FirstMovementServerTime = Stopwatch.GetTimestamp();
                 player.LastMovementTime = Time;
                 player.FirstMovementTime = Time;
             }
 
 
-            var currentServerTime = Stopwatch.GetTimestamp();
-            var deltaServerTime = 1000 * (currentServerTime - player.LastMovementServerTime) / Stopwatch.Frequency; // (ms)
-            double deltaMovementTime = Time - player.LastMovementTime; // 1 tick per movement
-            var deltaGameTime = deltaMovementTime * GameServer.GameLoopInterval;
+            //var currentServerTime = Stopwatch.GetTimestamp();
+            //var deltaServerTime = 1000 * (currentServerTime - player.LastMovementServerTime) / Stopwatch.Frequency; // (ms)
+            //double deltaMovementTime = Time - player.LastMovementTime; // 1 tick per movement
+            //var deltaGameTime = deltaMovementTime * GameServer.GameLoopInterval;
 
 
             switch (Check(player))
@@ -97,15 +102,17 @@ namespace AgarIOServer.Commands
                 break;
                 */
                 case MovementCheckResult.OK:
-
-                    foreach (var part in player.Parts)
+                    lock (player)
                     {
-                        var movement = Movement.Find(t => t.Item1 == part.Identifier);
-                        //Console.WriteLine("oldX {0} oldY {1} newX {2} newY {3}", part.X, part.Y, movement.Item2, movement.Item3);
+                        foreach (var part in player.Parts)
+                        {
+                            var movement = Movement.Find(t => t.Item1 == part.Identifier);
+                            //Console.WriteLine("oldX {0} oldY {1} newX {2} newY {3}", part.X, part.Y, movement.Item2, movement.Item3);
 
-                        part.X = movement.Item2;
-                        part.Y = movement.Item3;
-
+                            part.X = movement.Item2;
+                            part.Y = movement.Item3;
+                        }
+                        player.LastMovementTime = Time;
                     }
                     break;
 
@@ -114,8 +121,6 @@ namespace AgarIOServer.Commands
                     server.RemovePlayer(playerName, "Invalid movement command!");
                     break;
             }
-            player.LastMovementServerTime = currentServerTime;
-            player.LastMovementTime = Time;
         }
 
         private enum MovementCheckResult

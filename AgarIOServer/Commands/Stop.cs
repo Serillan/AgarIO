@@ -14,9 +14,12 @@ namespace AgarIOServer.Commands
 
         public override void Process(GameServer gameServer, string playerName)
         {
+            /*
             lock (gameServer.GameState)
                 gameServer.GameState.Players.RemoveAll(p => p.Name == playerName);
             gameServer.ConnectionManager.EndClientConnection(playerName);
+            */
+            gameServer.RemovePlayer(playerName, StopMessage);
         }
 
         public Stop() { }

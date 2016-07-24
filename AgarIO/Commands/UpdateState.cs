@@ -26,6 +26,9 @@ namespace AgarIO.Commands
         public override void Process(Game game)
         {
             var oldGameState = game.GameState;
+            if (oldGameState != null && oldGameState.Version > GameState.Version)
+                return;
+
             game.GameState = GameState;
             Player oldCurrentPlayer = null;
             Player currentPlayer = GameState.Players.Find(p => p.Name == game.PlayerName);

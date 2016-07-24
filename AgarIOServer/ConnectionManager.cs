@@ -131,15 +131,19 @@ namespace AgarIOServer
             lock (Connections)
             {
                 var conn = Connections.Find(t => t.PlayerName == playerName);
-                EndClientConnection(conn);
             }
-            
         }
 
         private bool IsConnectionAllowed(string playerName, IPEndPoint playerEndPoint, out string outputMessage)
         {
-            var nameAlreadyUsed = Connections.Exists(p => p.PlayerName == playerName);
-            if (nameAlreadyUsed)
+            bool isNameAlreadyUsed = false;
+
+            lock (Connections)
+            {
+                isNameAlreadyUsed = Connections.Exists(p => p.PlayerName == playerName);
+            }
+
+            if (isNameAlreadyUsed)
             {
                 outputMessage = $"Name {playerName} is already being used by another player!";
                 return false;

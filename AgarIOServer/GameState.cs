@@ -17,7 +17,7 @@ namespace AgarIOServer
         [ProtoBuf.ProtoMember(3)]
         public List<Virus> Viruses { get; set; }
         [ProtoBuf.ProtoMember(28)]
-        public int Version { get; set; }
+        public int Version;
         public GameState()
         {
             Players = new List<Player>();

@@ -77,27 +77,29 @@ namespace AgarIOServer
         private void ProcessClientCommand(string playerName, Command command)
         {
             command.Process(this, playerName);
-            GameState.Version++;
+            Interlocked.Add(ref GameState.Version, 1);
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
         }
 
         private void AddNewPlayer(string playerName)
         {
             Player newPlayer = new Player(playerName);
-            lock (GameState)
+            lock (GameState.Players)
             {
                 GameState.Players.Add(newPlayer);
             }
-            GameState.Version++;
+
+            Interlocked.Add(ref GameState.Version, 1);
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
         }
 
         public void RemovePlayer(string playerName, string msg)
         {
-            lock (GameState)
+            lock (GameState.Players)
             {
                 GameState.Players.RemoveAll(p => p.Name == playerName);
             }
+
             ConnectionManager.SendToClient(playerName, new Stop(msg));
             ConnectionManager.EndClientConnection(playerName);
         }
