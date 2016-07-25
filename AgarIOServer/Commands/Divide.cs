@@ -19,7 +19,7 @@ namespace AgarIOServer.Commands
             }
 
             if (player.Parts.Count > 16)
-                return;    
+                return;
 
             List<PlayerPart> newParts = new List<PlayerPart>();
             byte i = 0;

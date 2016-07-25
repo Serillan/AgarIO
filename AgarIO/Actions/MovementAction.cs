@@ -28,12 +28,20 @@ namespace AgarIO.Actions
 
             List<PlayerPart> doneParts = new List<PlayerPart>();
 
-            state.CurrentPlayer.Parts.Sort((p1, p2) => p1.Identifier.CompareTo(p2.Identifier)); ; // consistence
+            state.CurrentPlayer.Parts.Sort((p1, p2) =>
+            {
+                var d1 = Math.Sqrt((p1.X - X) * (p1.X - X) + (p1.Y - Y) * (p1.Y - Y));
+                var d2 = Math.Sqrt((p2.X - X) * (p2.X - X) + (p2.Y - Y) * (p2.Y - Y));
+                return d1.CompareTo(d2);
+            }); // consistence
 
             foreach (var part in state.CurrentPlayer.Parts)
             {
-                float vX = (float)(X - GraphicsEngine.GamePanelWidth / 2);
-                float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
+                //float vX = (float)(X - GraphicsEngine.GamePanelWidth / 2);
+                //float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
+                float vX = X - part.X;
+                float vY = Y - part.Y;
+
 
                 // normalize
                 float size = (float)(Math.Sqrt(vX * vX + vY * vY));
@@ -44,42 +52,53 @@ namespace AgarIO.Actions
 
                 var nextX = part.X + vX * part.Speed;
                 var nextY = part.Y + vY * part.Speed;
+
+                if (nextX > Game.MaxLocationX)
+                    nextX = Game.MaxLocationX;
+                if (nextX < 0)
+                    nextX = 0;
+                if (nextY > Game.MaxLocationY)
+                    nextY = Game.MaxLocationY;
+                if (nextY < 0)
+                    nextY = 0;
                 
-                //apply (prediction)
-                part.X = nextX;
-                part.Y = nextY;
-                /*
-                if (part.IsOutOfOtherParts)
+                foreach (var p in state.CurrentPlayer.Parts)
                 {
-                    foreach (var p in doneParts)
+                    if (p == part)
+                        continue;
+                    if (AreInCollision(nextX, nextY, part.Radius, p) && (part.MergeTime > 0 || p.MergeTime > 0) &&
+                        part.DivisionTime == 0 && p.DivisionTime == 0)
                     {
-                        if (AreInCollision(part, p) && p.IsOutOfOtherParts) // PREDICTION REQUIRED!
+                        var dx = p.X - nextX;
+                        var dy = p.Y - nextY;
+                        var distance = Math.Sqrt(dx * dx + dy * dy);
+                        if (distance != 0)
                         {
-                            var dx = p.X - part.X;
-                            var dy = p.Y - part.Y;
-                            var distance = Math.Sqrt(dx * dx + dy * dy);
                             var diff = part.Radius + p.Radius - distance;
 
                             var nx = dx / distance; // normalized
                             var ny = dy / distance;
-                            part.X = (float)(nextX - (p.Radius - distance + part.Radius) * nx);
-                            part.Y = (float)(nextY - (p.Radius - distance + part.Radius) * ny);
+                            nextX -= (float)((p.Radius - distance + part.Radius) * nx);
+                            nextY -= (float)((p.Radius - distance + part.Radius) * ny);
                         }
                     }
                 }
-                */
+                
                 if (nextX > Game.MaxLocationX)
-                    part.X = Game.MaxLocationX;
+                    nextX = Game.MaxLocationX;
                 if (nextX < 0)
-                    part.X = 0;
+                    nextX = 0;
                 if (nextY > Game.MaxLocationY)
-                    part.Y = Game.MaxLocationY;
+                    nextY = Game.MaxLocationY;
                 if (nextY < 0)
-                    part.Y = 0;
+                    nextY = 0;
+
+                // apply
+                part.X = nextX;
+                part.Y = nextY;
 
                 doneParts.Add(part);
-
-                command.Movement.Add(new Tuple<int, float, float>(part.Identifier, part.X, part.Y));
+                command.Movement.Add(new Tuple<int, float, float>(part.Identifier, nextX, nextY));
             }
 
             game.ServerConnection.SendAsync(command);
@@ -90,7 +109,15 @@ namespace AgarIO.Actions
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            return distance < part1.Radius + part2.Radius;
+            return distance < 1.3 * (part1.Radius + part2.Radius);
+        }
+
+        private bool AreInCollision(float x1, float y1, float radius1, PlayerPart part2)
+        {
+            var dx = part2.X - x1;
+            var dy = part2.Y - y1;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            return distance < radius1 + part2.Radius;
         }
 
     }

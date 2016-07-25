@@ -131,6 +131,7 @@ namespace AgarIOServer
             lock (Connections)
             {
                 var conn = Connections.Find(t => t.PlayerName == playerName);
+                EndClientConnection(conn);
             }
         }
 

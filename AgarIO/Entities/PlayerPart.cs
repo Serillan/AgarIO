@@ -27,7 +27,7 @@ namespace AgarIO.Entities
         {
             get
             {
-                return ((DivisionTime > 0 ? 40 + NthRoot(Mass, 5): 20 / NthRoot(Mass, 5)));
+                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 5): 20 / NthRoot(Mass, 5)));
             }
         }
 

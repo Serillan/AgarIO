@@ -12,7 +12,7 @@ namespace AgarIO.Actions
         public float Y { get; set; }
         public string Player { get; set; }
 
-        public Action(System.Drawing.Point MousePosition)
+        public Action(Point MousePosition)
         {
             this.X = MousePosition.X;
             this.Y = MousePosition.Y;

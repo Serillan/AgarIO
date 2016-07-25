@@ -78,9 +78,10 @@ namespace AgarIO
 
             foreach (var part in parts)
             {
-                var d = (float)(Math.Sqrt(2 * part.Radius * part.Radius));
-                g.FillEllipse(Brushes.DarkGoldenrod, part.X - d,
-                    part.Y - d, 2 * d, 2 * d);
+                //var d = (float)(Math.Sqrt(2 * part.Radius * part.Radius));
+                var r = part.Radius;
+                g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
+                    part.Y - r, 2 * r, 2 * r);
                 //Font myFont = new Font("Arial", 14);
                 //if (state.CurrentPlayer.Parts.Contains(part))
                 //    e.Graphics.DrawString($"{part.X} {part.Y}", myFont, Brushes.Black, 10, 10);

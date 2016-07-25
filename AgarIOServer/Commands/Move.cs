@@ -109,7 +109,7 @@ namespace AgarIOServer.Commands
                 case MovementCheckResult.OK:
                     lock (player)
                     {
-                        //List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
+                        List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
                         List<PlayerPart> partToBeMerged = new List<PlayerPart>();
 
                         foreach (var part in player.Parts)
@@ -125,8 +125,8 @@ namespace AgarIOServer.Commands
                                 part.MergeTime--;
                             if (part.MergeTime == 0)
                                 partToBeMerged.Add(part);
-                            //if (!part.IsOutOfOtherParts)
-                            //    partsStillInsideOtherParts.Add(part);
+                            if (!part.IsOutOfOtherParts)
+                                partsStillInsideOtherParts.Add(part);
 
                             part.Mass++;
                             server.ConnectionManager.SendToClient(playerName, new Invalidate("Mass increase."));
@@ -143,13 +143,13 @@ namespace AgarIOServer.Commands
                             }
                         }
 
-                        /*
+                        
                         foreach (var part in partsStillInsideOtherParts)
                         {
                             if (!player.Parts.Exists(p => p != part && AreInCollision(part, p)))
                                 part.IsOutOfOtherParts = true;
                         }
-                        */
+                        
                     }
                     break;
 
@@ -213,7 +213,8 @@ namespace AgarIOServer.Commands
                 if (player.FirstMovementTime == Time) // first movement - next test is bypassed
                     continue;
 
-                if (distance > part.Speed * 1.3 && res == MovementCheckResult.OK) // 0.1 error rate allowed
+                if (distance > part.Speed * 1.3 && res == MovementCheckResult.OK &&  // 0.3 error rate allowed
+                    !player.Parts.Exists(p => p != part && AreInCollision(p, part))) // when it is in collision, it can be moved faster!
                 {
                     Console.WriteLine("Distance error, Distance : {0} | deltaMovementTime : {1}",
                         distance, deltaMovementTime);
