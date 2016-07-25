@@ -81,6 +81,11 @@ namespace AgarIO
                         {
                             Time++;
                             new MovementAction(InputManager.MousePosition).Process(this);
+                            if (InputManager.DivideRequested)
+                            {
+                                new DivideAction(InputManager.MousePosition).Process(this);
+                                InputManager.DivideRequested = false;
+                            }
                             GraphicsEngine.Render(GameState);
                         }
                     }

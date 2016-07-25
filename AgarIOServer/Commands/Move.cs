@@ -54,14 +54,18 @@ namespace AgarIOServer.Commands
                 case MovementCheckResult.Overspeed:
                     //server.ConnectionManager.SendToClient(playerName, new Stop("Speed hack detected!"));
                     //server.ConnectionManager.EndClientConnection(playerName);
-                    server.RemovePlayer(playerName, "Speed hack detected!");
+                    //server.RemovePlayer(playerName, "Speed hack detected!");
+                    server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
+
                     break;
                 case MovementCheckResult.InvalidLocation:
                     //server.ConnectionManager.SendToClient(playerName, new Stop("Invalid location!"));
                     //server.ConnectionManager.EndClientConnection(playerName);
-                    server.RemovePlayer(playerName, "Invalid location!");
-                    break;
+                    //server.RemovePlayer(playerName, "Invalid location!");
+                    server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
 
+                    break;
+                #region speed fixing
                 // possible fixing ...
                 /*
                 if (deltaGameTime > deltaServerTime)
@@ -101,9 +105,13 @@ namespace AgarIOServer.Commands
 
                 break;
                 */
+                #endregion
                 case MovementCheckResult.OK:
                     lock (player)
                     {
+                        //List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
+                        List<PlayerPart> partToBeMerged = new List<PlayerPart>();
+
                         foreach (var part in player.Parts)
                         {
                             var movement = Movement.Find(t => t.Item1 == part.Identifier);
@@ -111,16 +119,48 @@ namespace AgarIOServer.Commands
 
                             part.X = movement.Item2;
                             part.Y = movement.Item3;
+                            if (part.DivisionTime > 0)
+                                part.DivisionTime--;
+                            if (part.MergeTime > 0)
+                                part.MergeTime--;
+                            if (part.MergeTime == 0)
+                                partToBeMerged.Add(part);
+                            //if (!part.IsOutOfOtherParts)
+                            //    partsStillInsideOtherParts.Add(part);
+
+                            part.Mass++;
+                            server.ConnectionManager.SendToClient(playerName, new Invalidate("Mass increase."));
                         }
-                        player.LastMovementTime = Time;
+
+                        foreach (var part in partToBeMerged)
+                        {
+                            var mergingPart = partToBeMerged.Find(p => p != part && CanBeMerged(part, p));
+                            if (mergingPart != null) // merge
+                            {
+                                part.Mass += mergingPart.Mass;
+                                part.MergeTime = (int)Math.Round((0.02 * part.Mass + 5) * 1000 / GameServer.GameLoopInterval);
+                                player.Parts.Remove(mergingPart);
+                            }
+                        }
+
+                        /*
+                        foreach (var part in partsStillInsideOtherParts)
+                        {
+                            if (!player.Parts.Exists(p => p != part && AreInCollision(part, p)))
+                                part.IsOutOfOtherParts = true;
+                        }
+                        */
                     }
                     break;
 
                 case MovementCheckResult.OtherError:
                     //server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement command!"));
-                    server.RemovePlayer(playerName, "Invalid movement command!");
+                    //server.RemovePlayer(playerName, "Invalid movement command!");
+                    server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                     break;
             }
+            player.LastMovementTime = Time;
+
         }
 
         private enum MovementCheckResult
@@ -173,7 +213,7 @@ namespace AgarIOServer.Commands
                 if (player.FirstMovementTime == Time) // first movement - next test is bypassed
                     continue;
 
-                if (distance > part.Speed * 1.1 && res == MovementCheckResult.OK) // 0.1 error rate allowed
+                if (distance > part.Speed * 1.3 && res == MovementCheckResult.OK) // 0.1 error rate allowed
                 {
                     Console.WriteLine("Distance error, Distance : {0} | deltaMovementTime : {1}",
                         distance, deltaMovementTime);
@@ -189,6 +229,24 @@ namespace AgarIOServer.Commands
             bool isX = x == GameServer.MaxLocationX || x == 0;
             bool isY = y == GameServer.MaxLocationY || y == 0;
             return isX || isY;
+        }
+
+        private bool AreInCollision(PlayerPart part1, PlayerPart part2)
+        {
+            var dx = part2.X - part1.X;
+            var dy = part2.Y - part1.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            return distance < part1.Radius + part2.Radius;
+        }
+
+        private bool CanBeMerged(PlayerPart part1, PlayerPart part2)
+        {
+            if (part1.MergeTime > 0 || part2.MergeTime > 0)
+                return false;
+            var dx = part2.X - part1.X;
+            var dy = part2.Y - part1.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            return distance < 0.5 * (part1.Radius + part2.Radius);
         }
     }
 }

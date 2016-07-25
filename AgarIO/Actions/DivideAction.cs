@@ -15,7 +15,7 @@ namespace AgarIO.Actions
 
         public override void Process(Game game)
         {
-            throw new NotImplementedException();
+            game.ServerConnection.SendAsync(new Commands.Divide());
         }
     }
 }

@@ -10,14 +10,26 @@ namespace AgarIOServer.Entities
     class PlayerPart : Entity
     {
         [ProtoBuf.ProtoMember(1)]
-        public int Identifier { get; set; }
+        public byte Identifier { get; set; }
+
+        [ProtoBuf.ProtoMember(2)]
+        public byte DivisionTime { get; set; }
+
+        [ProtoBuf.ProtoMember(3)]
+        public int MergeTime { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public const byte DefaulDivisionTime = 20;
+
+        [ProtoBuf.ProtoMember(4)]
+        public bool IsOutOfOtherParts { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         public float Speed
         {
             get
             {
-                return (20 / NthRoot(Mass, 5));
+                return ((DivisionTime > 0 ? 40 + NthRoot(Mass, 5) : 20 / NthRoot(Mass, 5)));
             }
         }
 
@@ -25,5 +37,11 @@ namespace AgarIOServer.Entities
         {
             return (float)(Math.Pow(A, 1.0 / N));
         }
+
+        public PlayerPart()
+        {
+            DivisionTime = 0;
+        }
+
     }
 }

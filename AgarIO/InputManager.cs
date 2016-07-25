@@ -16,6 +16,7 @@ namespace AgarIO
         Game Game;
 
         public Point MousePosition { get; private set; }
+        public bool DivideRequested { get; set; }
 
         public InputManager(GameForm gameForm, Game game)
         {
@@ -39,6 +40,9 @@ namespace AgarIO
 
             if (e.KeyCode == Keys.N && Game.GameState.CurrentPlayer.Parts[0].Mass > 10)
                 Game.GameState.CurrentPlayer.Parts[0].Mass -= 10;
+
+            if (e.KeyCode == Keys.Space)
+                DivideRequested = true;
         }
 
         private void GamePanel_MouseMove(object sender, MouseEventArgs e)

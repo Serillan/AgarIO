@@ -11,14 +11,23 @@ namespace AgarIO.Entities
     {
 
         [ProtoBuf.ProtoMember(1)]
-        public int Identifier { get; set; }
+        public byte Identifier { get; set; }
+
+        [ProtoBuf.ProtoMember(2)]
+        public byte DivisionTime { get; set; }
+
+        [ProtoBuf.ProtoMember(3)]
+        public int MergeTime { get; set; }
+
+        [ProtoBuf.ProtoMember(4)]
+        public bool IsOutOfOtherParts { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         public float Speed
         {
             get
             {
-                return (20 / NthRoot(Mass, 5));
+                return ((DivisionTime > 0 ? 40 + NthRoot(Mass, 5): 20 / NthRoot(Mass, 5)));
             }
         }
 
