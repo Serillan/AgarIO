@@ -61,7 +61,7 @@ namespace AgarIO.Actions
                     nextY = Game.MaxLocationY;
                 if (nextY < 0)
                     nextY = 0;
-                
+
                 foreach (var p in state.CurrentPlayer.Parts)
                 {
                     if (p == part)
@@ -80,10 +80,21 @@ namespace AgarIO.Actions
                             var ny = dy / distance;
                             nextX -= (float)((p.Radius - distance + part.Radius) * nx);
                             nextY -= (float)((p.Radius - distance + part.Radius) * ny);
+
+                            /* possible movement inside many parts fix (not working)
+                            if (doneParts.Exists(p2 =>     // if there is still collision
+                            p2 != part && AreInCollision(nextX, nextY, part.Radius, p2) && (part.MergeTime > 0 || p2.MergeTime > 0) &&
+                            part.DivisionTime == 0 && p2.DivisionTime == 0))
+                            {
+                                // then no movement is applied
+                                nextX = part.X;
+                                nextY = part.Y;
+                            }
+                            */
                         }
                     }
                 }
-                
+
                 if (nextX > Game.MaxLocationX)
                     nextX = Game.MaxLocationX;
                 if (nextX < 0)
@@ -109,7 +120,10 @@ namespace AgarIO.Actions
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            return distance < 1.3 * (part1.Radius + part2.Radius);
+            var res = distance < 0.99 * (part1.Radius + part2.Radius);
+            if (res == true)
+                Console.WriteLine("");
+            return res;
         }
 
         private bool AreInCollision(float x1, float y1, float radius1, PlayerPart part2)
@@ -117,7 +131,10 @@ namespace AgarIO.Actions
             var dx = part2.X - x1;
             var dy = part2.Y - y1;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            return distance < radius1 + part2.Radius;
+            var res = distance <= 0.99 * (radius1 + part2.Radius);
+            if (res == true)
+                Console.WriteLine("");
+            return res;
         }
 
     }

@@ -79,7 +79,10 @@ namespace AgarIOServer
             Interlocked.Add(ref GameState.Version, 1);
             command.Process(this, playerName);
             //Console.WriteLine("sending state");
-            ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            lock (GameState) // TODO - with higher server load - it can be done in loop
+            {
+                ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            }
         }
 
         private void AddNewPlayer(string playerName)
@@ -96,12 +99,15 @@ namespace AgarIOServer
 
         public void RemovePlayer(string playerName, string msg)
         {
+
+
+            ConnectionManager.SendToClient(playerName, new Stop(msg));
+
             lock (GameState.Players)
             {
                 GameState.Players.RemoveAll(p => p.Name == playerName);
             }
 
-            ConnectionManager.SendToClient(playerName, new Stop(msg));
             ConnectionManager.EndClientConnection(playerName);
         }
 

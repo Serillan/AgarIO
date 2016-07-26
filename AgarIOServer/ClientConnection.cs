@@ -135,7 +135,7 @@ namespace AgarIOServer
                 try
                 {
                     var command = Serializer.Deserialize<Commands.Command>(stream);
-                    //Console.WriteLine("Received {0} command from {1}", command.GetType(), PlayerName);
+                   // Console.WriteLine("Received {0} command from {1}", command.GetType(), PlayerName);
                     return command;
                 }
                 catch (Exception ex)
@@ -156,8 +156,8 @@ namespace AgarIOServer
 
         public void Dispose()
         {
-            //if (UdpClient != null)
-             //   UdpClient.Dispose();
+            if (UdpClient != null)
+                UdpClient.Dispose();
         }
 
         public static string GetMessageFromConnectionResult(UdpReceiveResult res)

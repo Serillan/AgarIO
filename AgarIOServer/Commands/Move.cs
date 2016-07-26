@@ -113,9 +113,9 @@ namespace AgarIOServer.Commands
                     */
                     #endregion
                     case MovementCheckResult.OK:
-                        bool toBeInvalidated = true;
-                        Console.WriteLine("Entering player lock  " + playerName);
-                        Console.WriteLine("Entered player lock  " + playerName);
+                        bool toBeInvalidated = false;
+                        //Console.WriteLine("Entering player lock  " + playerName);
+                        //Console.WriteLine("Entered player lock  " + playerName);
                         List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
                         List<PlayerPart> partToBeMerged = new List<PlayerPart>();
 
@@ -152,20 +152,20 @@ namespace AgarIOServer.Commands
                         }
 
                         // eating
-                        Console.WriteLine("Entering ALL players lock  " + playerName);
+
+                        var eatenPlayers = new HashSet<Player>();
                         lock (server.GameState.Players)
                         {
-                            Console.WriteLine("Entered ALL players lock  " + playerName);
                             foreach (var otherPlayer in server.GameState.Players)
                             {
-                                Console.WriteLine("Entering player lock with try  " + playerName);
-                                if (Monitor.TryEnter(otherPlayer))
+                                //Console.WriteLine("Entering player lock with try  " + playerName);
+                                if (Monitor.TryEnter(otherPlayer)) // deadlock prevention
                                 {
-                                    Console.WriteLine("Entered player lock with try  " + playerName);
-                                    if (player == otherPlayer)
+                                    // Console.WriteLine("Entered player lock with try  " + playerName);
+                                    if (player.Name == otherPlayer.Name)
                                     {
                                         Monitor.Exit(otherPlayer);
-                                        Console.WriteLine("Exited player lock with try  " + playerName);
+                                        // Console.WriteLine("Exited player lock with try  " + playerName);
                                         continue;
                                     }
 
@@ -194,16 +194,20 @@ namespace AgarIOServer.Commands
                                     player.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
 
                                     if (otherPlayer.Parts.Count == 0)
-                                        server.RemovePlayer(otherPlayer.Name, "You have been eaten!");
+                                        eatenPlayers.Add(otherPlayer); // cannot be removed while enumerated!
 
                                     if (player.Parts.Count == 0)
-                                        server.RemovePlayer(player.Name, "You have been eaten!");
+                                        eatenPlayers.Add(player);
 
                                     Monitor.Exit(otherPlayer);
-                                    Console.WriteLine("Exited player lock with try  " + playerName);
+                                    //Console.WriteLine("Exited player lock with try  " + playerName);
                                 }
                             }
 
+                            foreach (var eatenPlayer in eatenPlayers)
+                            {
+                                server.RemovePlayer(eatenPlayer.Name, "You have been eaten!");
+                            }
 
                             foreach (var part in partsStillInsideOtherParts)
                             {

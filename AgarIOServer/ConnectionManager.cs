@@ -40,7 +40,7 @@ namespace AgarIOServer
             while (!conn.IsClosed)
             {
                 var receiveTask = conn.ReceiveCommandAsync();
-                var task = await Task.WhenAny(receiveTask, Task.Delay(1000));
+                var task = await Task.WhenAny(receiveTask, Task.Delay(100000));
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;
@@ -112,6 +112,7 @@ namespace AgarIOServer
 
         public void SendToClient(string name, Commands.Command command)
         {
+            Console.WriteLine("Sending {0} to client {1}", command.GetType().ToString(), name);
             var stream = new MemoryStream();
             Serializer.Serialize(stream, command);
             stream.Seek(0, SeekOrigin.Begin);
@@ -121,12 +122,9 @@ namespace AgarIOServer
         public void EndClientConnection(ClientConnection client)
         {
             client.IsClosed = true;
-            Console.WriteLine("Trying to lock connections  " + client.PlayerName);
             lock (Connections)
             {
-                Console.WriteLine("connection locked  " + client.PlayerName);
-                
-                //Connections.Remove(client); // TODO mozno toto alebo ten dispose dole robi problem
+                Connections.Remove(client); // TODO mozno toto alebo ten dispose dole robi problem
             }
             Console.WriteLine($"Stopping player {client.PlayerName}!");
             client.Dispose();
