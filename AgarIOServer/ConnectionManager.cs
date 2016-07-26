@@ -40,7 +40,7 @@ namespace AgarIOServer
             while (!conn.IsClosed)
             {
                 var receiveTask = conn.ReceiveCommandAsync();
-                var task = await Task.WhenAny(receiveTask, Task.Delay(50000));
+                var task = await Task.WhenAny(receiveTask, Task.Delay(1000));
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;
@@ -49,6 +49,9 @@ namespace AgarIOServer
                 }
                 else // timeout
                 {
+                    if (conn.IsClosed)
+                        return;
+
                     conn.SendAsync(new Commands.Stop());
                     Console.WriteLine("Stopping player {0} because of timeout!", conn.PlayerName);
                     PlayerCommandHandler(conn.PlayerName, new Commands.Stop());
@@ -118,9 +121,12 @@ namespace AgarIOServer
         public void EndClientConnection(ClientConnection client)
         {
             client.IsClosed = true;
+            Console.WriteLine("Trying to lock connections  " + client.PlayerName);
             lock (Connections)
             {
-                Connections.Remove(client);
+                Console.WriteLine("connection locked  " + client.PlayerName);
+                
+                //Connections.Remove(client); // TODO mozno toto alebo ten dispose dole robi problem
             }
             Console.WriteLine($"Stopping player {client.PlayerName}!");
             client.Dispose();

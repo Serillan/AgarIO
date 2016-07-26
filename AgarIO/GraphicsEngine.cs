@@ -74,15 +74,32 @@ namespace AgarIO
 
         private void DrawPlayers(Graphics g)
         {
-            var parts = state.Players.SelectMany(p => p.Parts).OrderBy(p => p.Radius).ToList();
+            var playerPartsWithColorAndName = from player in state.Players select new { player.Color, player.Parts, PlayerName = player.Name };
 
-            foreach (var part in parts)
+            var partsWithColorAndName = (
+                        from partWithColorAndName in playerPartsWithColorAndName
+                        from part in partWithColorAndName.Parts
+                        select new { Part = part, partWithColorAndName.Color, partWithColorAndName.PlayerName }
+                        ).OrderBy(p => p.Part.Radius).ToList();
+
+            foreach (var partWithColorAndName in partsWithColorAndName)
             {
                 //var d = (float)(Math.Sqrt(2 * part.Radius * part.Radius));
-                var r = part.Radius;
-                g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
-                    part.Y - r, 2 * r, 2 * r);
-                //Font myFont = new Font("Arial", 14);
+                var part = partWithColorAndName.Part;
+                var radius = part.Radius;
+                var color = partWithColorAndName.Color;
+                var name = partWithColorAndName.PlayerName;
+
+                var brush = new SolidBrush(Color.FromArgb(color[0], color[1], color[2]));
+                //g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
+                //   part.Y - r, 2 * r, 2 * r);
+                g.FillEllipse(brush, part.X - radius,
+                   part.Y - radius, 2 * radius, 2 * radius);
+                Font myFont = new Font("Arial", 14);
+
+                var sizeOfText = g.MeasureString(name, myFont);
+                g.DrawString(name, myFont, Brushes.Black, part.X - sizeOfText.Width / 2, part.Y - sizeOfText.Height / 2);
+
                 //if (state.CurrentPlayer.Parts.Contains(part))
                 //    e.Graphics.DrawString($"{part.X} {part.Y}", myFont, Brushes.Black, 10, 10);
             }

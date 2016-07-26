@@ -76,8 +76,9 @@ namespace AgarIOServer
 
         private void ProcessClientCommand(string playerName, Command command)
         {
-            command.Process(this, playerName);
             Interlocked.Add(ref GameState.Version, 1);
+            command.Process(this, playerName);
+            //Console.WriteLine("sending state");
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
         }
 

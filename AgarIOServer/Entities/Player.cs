@@ -25,6 +25,9 @@ namespace AgarIOServer.Entities
         [ProtoBuf.ProtoIgnore]
         public long FirstMovementServerTime { get; set; }
 
+        [ProtoBuf.ProtoMember(3)]
+        public byte[] Color { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         public long CreationTime { get; set; }
 
@@ -83,6 +86,8 @@ namespace AgarIOServer.Entities
             Parts.Add(part);
             this.FirstMovementServerTime = Stopwatch.GetTimestamp();
             this.FirstMovementTime = 0;
+            this.Color = new byte[3];
+            GameServer.RandomG.NextBytes(this.Color);
         }
 
         public Player() { }

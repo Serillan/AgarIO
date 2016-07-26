@@ -15,6 +15,9 @@ namespace AgarIO.Entities
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
 
+        [ProtoBuf.ProtoMember(3)]
+        public byte[] Color { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         public int LastMovementTime { get; set; }
 

@@ -126,7 +126,7 @@ namespace AgarIO
                 if (IsClosed)
                     break;
                 var receiveTask = ReceiveCommandAsync();
-                if (await Task.WhenAny(receiveTask, Task.Delay(50000)) == receiveTask)
+                if (await Task.WhenAny(receiveTask, Task.Delay(500000)) == receiveTask)
                 {
                     handler(receiveTask.Result);
                 }

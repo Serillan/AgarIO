@@ -138,7 +138,7 @@ namespace AgarIOServer
                     //Console.WriteLine("Received {0} command from {1}", command.GetType(), PlayerName);
                     return command;
                 }
-                catch (ProtoException ex)
+                catch (Exception ex)
                 {
                     // ignore this type of exception (multiple ACK ...), wait for first command
                     Console.WriteLine(ex.ToString());
@@ -156,8 +156,8 @@ namespace AgarIOServer
 
         public void Dispose()
         {
-            if (UdpClient != null)
-                UdpClient.Dispose();
+            //if (UdpClient != null)
+             //   UdpClient.Dispose();
         }
 
         public static string GetMessageFromConnectionResult(UdpReceiveResult res)
