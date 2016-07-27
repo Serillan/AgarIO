@@ -13,8 +13,7 @@ namespace AgarIO.Actions
         public MovementAction(Point MousePosition) : base(MousePosition)
         {
         }
-        // TODO: pre zlepsenie sa bude posielat movement a ignorovat co vrati server
-        // jedine ak posle FALSE a poziciu hraca, tak si zmenim vlastnu poziciu
+
         public override void Process(Game game)
         {
             var state = game.GameState;
@@ -41,7 +40,7 @@ namespace AgarIO.Actions
                 //float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
                 float vX = X - part.X;
                 float vY = Y - part.Y;
-
+                
 
                 // normalize
                 float size = (float)(Math.Sqrt(vX * vX + vY * vY));
@@ -49,7 +48,18 @@ namespace AgarIO.Actions
                     return;
                 vX /= size;
                 vY /= size;
-
+                
+                if (part.IsNewDividedPart)
+                {
+                    part.IsNewDividedPart = false;
+                    part.DivisionTime = PlayerPart.DefaulDivisionTime;
+                }
+                else
+                {
+                    if (part.DivisionTime > 0)
+                        part.DivisionTime--;
+                }
+                
                 var nextX = part.X + vX * part.Speed;
                 var nextY = part.Y + vY * part.Speed;
 
@@ -81,7 +91,8 @@ namespace AgarIO.Actions
                             nextX -= (float)((p.Radius - distance + part.Radius) * nx);
                             nextY -= (float)((p.Radius - distance + part.Radius) * ny);
 
-                            /* possible movement inside many parts fix (not working)
+                            // possible movement inside many parts fix (not working)
+                            /*
                             if (doneParts.Exists(p2 =>     // if there is still collision
                             p2 != part && AreInCollision(nextX, nextY, part.Radius, p2) && (part.MergeTime > 0 || p2.MergeTime > 0) &&
                             part.DivisionTime == 0 && p2.DivisionTime == 0))
@@ -120,7 +131,7 @@ namespace AgarIO.Actions
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            var res = distance < 0.99 * (part1.Radius + part2.Radius);
+            var res = distance < 0.99999 * (part1.Radius + part2.Radius);
             if (res == true)
                 Console.WriteLine("");
             return res;
@@ -131,7 +142,7 @@ namespace AgarIO.Actions
             var dx = part2.X - x1;
             var dy = part2.Y - y1;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            var res = distance <= 0.99 * (radius1 + part2.Radius);
+            var res = distance <= 0.99999 * (radius1 + part2.Radius);
             if (res == true)
                 Console.WriteLine("");
             return res;

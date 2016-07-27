@@ -17,10 +17,13 @@ namespace AgarIO.Entities
         public byte DivisionTime { get; set; }
 
         [ProtoBuf.ProtoMember(3)]
-        public int MergeTime { get; set; }
+        public bool IsNewDividedPart { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public const byte DefaulDivisionTime = 10;
 
         [ProtoBuf.ProtoMember(4)]
-        public bool IsOutOfOtherParts { get; set; }
+        public int MergeTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         public float Speed

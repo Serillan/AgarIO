@@ -74,20 +74,42 @@ namespace AgarIOServer.Entities
             }
         }
 
-        public Player(string name)
+        public Player(string name, GameState state)
         {
             this.Name = name;
             this.Parts = new List<PlayerPart>();
             var part = new PlayerPart();
-            part.Mass = 10;
-            part.X = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationX);
-            part.Y = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationY);
+            part.Mass = 1000;
+
+            List<PlayerPart> otherPlayerParts;
+
+            lock (state.Players)
+            {
+                otherPlayerParts = (from player in state.Players
+                                    where player.Name != name
+                                    from otherPlayerPart in player.Parts
+                                    select otherPlayerPart).ToList();
+            }
+            do
+            {
+                part.X = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationX);
+                part.Y = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationY);
+            } while (otherPlayerParts.Exists(p => AreInCollision(part, p)));
+
             part.Identifier = 1;
             Parts.Add(part);
             this.FirstMovementServerTime = Stopwatch.GetTimestamp();
             this.FirstMovementTime = 0;
             this.Color = new byte[3];
             GameServer.RandomG.NextBytes(this.Color);
+        }
+
+        private bool AreInCollision(PlayerPart part1, PlayerPart part2)
+        {
+            var dx = part2.X - part1.X;
+            var dy = part2.Y - part1.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            return distance < part1.Radius + part2.Radius;
         }
 
         public Player() { }

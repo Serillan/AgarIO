@@ -16,13 +16,13 @@ namespace AgarIOServer.Entities
         public byte DivisionTime { get; set; }
 
         [ProtoBuf.ProtoMember(3)]
+        public bool IsNewDividedPart { get; set; }
+
+        [ProtoBuf.ProtoMember(4)]
         public int MergeTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public const byte DefaulDivisionTime = 10;
-
-        [ProtoBuf.ProtoMember(4)]
-        public bool IsOutOfOtherParts { get; set; }
+        public const byte DefaulDivisionTime = 15;
 
         [ProtoBuf.ProtoIgnore]
         public float Speed
@@ -41,6 +41,7 @@ namespace AgarIOServer.Entities
         public PlayerPart()
         {
             DivisionTime = 0;
+            IsNewDividedPart = false;
         }
 
     }

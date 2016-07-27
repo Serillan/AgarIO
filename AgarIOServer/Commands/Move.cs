@@ -132,11 +132,10 @@ namespace AgarIOServer.Commands
                                 part.MergeTime--;
                             if (part.MergeTime == 0)
                                 partToBeMerged.Add(part);
-                            if (!part.IsOutOfOtherParts)
-                                partsStillInsideOtherParts.Add(part);
+                            part.IsNewDividedPart = false;
 
-                            part.Mass++;
-                            toBeInvalidated = true;
+                           // part.Mass++;
+                           // toBeInvalidated = true;
                         }
 
                         foreach (var part in partToBeMerged)
@@ -150,8 +149,30 @@ namespace AgarIOServer.Commands
                                 toBeInvalidated = true;
                             }
                         }
+                       
+                        // eating food
 
-                        // eating
+                        var eatenFood = new HashSet<Food>();
+                        var newFood = new List<Food>();
+                        lock (server.GameState.Food)
+                        {
+                            foreach (var food in server.GameState.Food)
+                                foreach (var part in player.Parts)
+                                    if (CanBeEaten(food, part))
+                                    {
+                                        part.Mass += food.Mass;
+                                        eatenFood.Add(food);
+                                        // new food
+                                        newFood.Add(GenerateNewFood());
+                                    }
+                            if (eatenFood.Count > 0)
+                                toBeInvalidated = true;
+
+                            server.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
+                            newFood.ForEach(f => server.GameState.Food.Add(f));
+                        }
+
+                        // eating player
 
                         var eatenPlayers = new HashSet<Player>();
                         lock (server.GameState.Players)
@@ -188,8 +209,11 @@ namespace AgarIOServer.Commands
                                             }
                                         }
                                     if (partsToBeRemoved.Count > 0)
+                                    {
                                         toBeInvalidated = true;
-
+                                        server.ConnectionManager.SendToClient(otherPlayer.Name, new Invalidate("Eating"));
+                                    }
+                                    
                                     otherPlayer.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
                                     player.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
 
@@ -209,13 +233,8 @@ namespace AgarIOServer.Commands
                                 server.RemovePlayer(eatenPlayer.Name, "You have been eaten!");
                             }
 
-                            foreach (var part in partsStillInsideOtherParts)
-                            {
-                                if (!player.Parts.Exists(p => p != part && AreInCollision(part, p)))
-                                    part.IsOutOfOtherParts = true;
-                            }
                         }
-                        if (toBeInvalidated == true)
+                    if (toBeInvalidated)
                             server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
 
@@ -237,6 +256,7 @@ namespace AgarIOServer.Commands
         private MovementCheckResult Check(Player player)
         {
             var res = MovementCheckResult.OK;
+            //return res;
 
             var currentServerTime = Stopwatch.GetTimestamp();
             var deltaMovementTime = Time - player.LastMovementTime; // 1 tick per movement
@@ -262,7 +282,10 @@ namespace AgarIOServer.Commands
             {
                 var movement = Movement.Find(t => t.Item1 == part.Identifier);
                 if (movement == null) // movement of certain part is missing
+                {
                     res = MovementCheckResult.OtherError;
+                    break;
+                }
 
                 if (movement.Item2 > GameServer.MaxLocationX || movement.Item2 < 0 || movement.Item3 > GameServer.MaxLocationY || movement.Item3 < 0)
                     res = MovementCheckResult.InvalidLocation;
@@ -279,7 +302,7 @@ namespace AgarIOServer.Commands
                 if (player.FirstMovementTime == Time) // first movement - next test is bypassed
                     continue;
 
-                if (distance > part.Speed * 1.3 && res == MovementCheckResult.OK &&  // 0.3 error rate allowed
+                if (distance > part.Speed * 1.01 && res == MovementCheckResult.OK &&  // *3 error rate allowed
                     !player.Parts.Exists(p => p != part && AreInCollision(p, part))) // when it is in collision, it can be moved faster!
                 {
                     Console.WriteLine("Distance error, Distance : {0} | deltaMovementTime : {1}",
@@ -306,6 +329,13 @@ namespace AgarIOServer.Commands
             return distance < part1.Radius + part2.Radius;
         }
 
+        private Food GenerateNewFood()
+        {
+            var random = GameServer.RandomG;
+            return new Food(random.Next(GameServer.MaxLocationX), random.Next(GameServer.MaxLocationY),
+                random.Next(10, 70));
+        }
+
         private bool CanBeMerged(PlayerPart part1, PlayerPart part2)
         {
             if (part1.MergeTime > 0 || part2.MergeTime > 0)
@@ -324,6 +354,19 @@ namespace AgarIOServer.Commands
 
             if (distance < eatingPart.Radius - partToBeEaten.Radius &&    // is completely inside
                 eatingPart.Mass > 1.25 * partToBeEaten.Mass)
+                return true;
+
+            return false;
+        }
+
+        private bool CanBeEaten(Food food, PlayerPart playerPart)
+        {
+            var dx = food.X - playerPart.X;
+            var dy = food.Y - playerPart.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            if (distance < playerPart.Radius - food.Radius &&    // is completely inside
+                playerPart.Mass > 1.25 * food.Mass)
                 return true;
 
             return false;

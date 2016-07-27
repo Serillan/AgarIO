@@ -23,7 +23,6 @@ namespace AgarIOServer
             Players = new List<Player>();
             Food = new List<Food>();
             Viruses = new List<Virus>();
-            //Version = 0;
         }
     }
 }

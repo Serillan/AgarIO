@@ -112,7 +112,7 @@ namespace AgarIOServer
 
         public void SendToClient(string name, Commands.Command command)
         {
-            Console.WriteLine("Sending {0} to client {1}", command.GetType().ToString(), name);
+            //Console.WriteLine("Sending {0} to client {1}", command.GetType().ToString(), name);
             var stream = new MemoryStream();
             Serializer.Serialize(stream, command);
             stream.Seek(0, SeekOrigin.Begin);
@@ -124,7 +124,7 @@ namespace AgarIOServer
             client.IsClosed = true;
             lock (Connections)
             {
-                Connections.Remove(client); // TODO mozno toto alebo ten dispose dole robi problem
+                Connections.Remove(client);
             }
             Console.WriteLine($"Stopping player {client.PlayerName}!");
             client.Dispose();
@@ -148,16 +148,21 @@ namespace AgarIOServer
                 isNameAlreadyUsed = Connections.Exists(p => p.PlayerName == playerName);
             }
 
+            if (playerName.Length > 20) // maximum player name length
+            {
+                outputMessage = $"Name is too long! Maximum allowed name length is {20}.";
+                return false;
+            }
+
             if (isNameAlreadyUsed)
             {
                 outputMessage = $"Name {playerName} is already being used by another player!";
                 return false;
             }
-            else // ALLOWED
-            {
-                outputMessage = "";
-                return true;
-            }
+
+            // ALLOWED
+            outputMessage = "";
+            return true;
         }
 
         public void SendToAllClients(Commands.Command command)

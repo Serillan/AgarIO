@@ -29,8 +29,8 @@ namespace AgarIO
         GraphicsEngine GraphicsEngine;
         InputManager InputManager;
 
-        public const int MaxLocationX = 2400;
-        public const int MaxLocationY = 2400;
+        public const int MaxLocationX = 9000;
+        public const int MaxLocationY = 9000;
         const int GameLoopInterval = 30;
 
         /// <summary>

@@ -28,13 +28,13 @@ namespace AgarIOServer.Commands
 
                 foreach (var part in player.Parts)
                 {
-                    if (part.Mass > 20)
+                    if (part.Mass >= 200)
                     {
                         newParts.Add(new PlayerPart()
                         {
                             DivisionTime = 0,
                             Identifier = i++,
-                            IsOutOfOtherParts = false,
+                            IsNewDividedPart = false,
                             Mass = part.Mass / 2,
                             X = part.X,
                             Y = part.Y,
@@ -45,23 +45,23 @@ namespace AgarIOServer.Commands
                         {
                             DivisionTime = PlayerPart.DefaulDivisionTime,
                             Identifier = i++,
-                            IsOutOfOtherParts = false,
+                            IsNewDividedPart = true,
                             Mass = part.Mass / 2,
                             X = part.X,
                             Y = part.Y,
                             MergeTime = (int)Math.Round((0.02 * (part.Mass / 2) + 5) * 1000 / GameServer.GameLoopInterval),
-
                         });
-                    }
 
+                    }
                     else
                         newParts.Add(part);
                 }
-
-                player.Parts = newParts;
+                if (player.Parts.Count != newParts.Count)
+                {
+                    player.Parts = newParts;
+                    game.ConnectionManager.SendToClient(playerName, new Invalidate("Division"));
+                }
             }
-
-            game.ConnectionManager.SendToClient(playerName, new Invalidate("Division"));
         }
     }
 }

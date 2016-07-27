@@ -18,7 +18,7 @@ namespace AgarIO
         static GamePanel GamePanel;
         Pen MatrixPen;
 
-        GameState state;
+        GameState State;
 
         static public int GamePanelWidth
         {
@@ -47,34 +47,36 @@ namespace AgarIO
 
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            if (state == null)
+            if (State == null)
                 return;
             DrawGame(e.Graphics);
         }
 
         private void DrawGame(Graphics g)
         {
-            if (state == null || state.CurrentPlayer == null)
+            if (State == null || State.CurrentPlayer == null)
                 return;
             g.Clear(Color.Black);
             TransformScene(g);
             DrawMatrix(g);
+            DrawFood(g);
             DrawPlayers(g);
+            DrawScoreTable(g);
         }
 
         private void TransformScene(Graphics g)
         {
-            float q = (float)((0.1 * GamePanel.Width) / state.CurrentPlayer.Radius);
+            float q = (float)((0.1 * GamePanel.Width) / State.CurrentPlayer.Radius);
             // opposite order!
             g.TranslateTransform(GamePanel.Width / 2.0f, GamePanel.Height / 2.0f);
             if (q < 1) // don't scale until it reaches max view radius (_k_ * GamePanel.Width)
                 g.ScaleTransform(q, q);
-            g.TranslateTransform(-state.CurrentPlayer.X, -state.CurrentPlayer.Y); // will be applied 1.
+            g.TranslateTransform(-State.CurrentPlayer.X, -State.CurrentPlayer.Y); // will be applied 1.
         }
 
         private void DrawPlayers(Graphics g)
         {
-            var playerPartsWithColorAndName = from player in state.Players select new { player.Color, player.Parts, PlayerName = player.Name };
+            var playerPartsWithColorAndName = from player in State.Players select new { player.Color, player.Parts, PlayerName = player.Name };
 
             var partsWithColorAndName = (
                         from partWithColorAndName in playerPartsWithColorAndName
@@ -114,6 +116,36 @@ namespace AgarIO
                 g.DrawLine(MatrixPen, 0, y, Game.MaxLocationX, y);
         }
 
+        private void DrawFood(Graphics g)
+        {
+            if (State.Food == null)
+                return;
+            foreach (var food in State.Food)
+            {
+                var brush = new SolidBrush(Color.FromArgb(food.Color[0], food.Color[1], food.Color[2]));
+                //g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
+                //   part.Y - r, 2 * r, 2 * r);
+                g.FillEllipse(brush, food.X - food.Radius,
+                   food.Y - food.Radius, 2 * food.Radius, 2 * food.Radius);
+            }
+        }
+
+        private void DrawScoreTable(Graphics g)
+        {
+            if (State?.Players == null)
+                return;
+
+            StringBuilder scoreText = new StringBuilder();
+            var sortedPlayers = (from player in State.Players
+                             orderby player.Mass
+                             select player).ToList();
+
+            for (int i = 0; i < sortedPlayers.Count; i++)
+                scoreText.Append($"\n{i + 1}. {sortedPlayers[i].Name} : {sortedPlayers[i].Mass}");
+
+            GameForm.ScoreLabel.Text = "Leaderboard" + scoreText.ToString();
+        }
+
         public void StartGraphics()
         {
             GameForm.Show();
@@ -129,7 +161,7 @@ namespace AgarIO
 
         public void Render(GameState state)
         {
-            this.state = state;
+            this.State = state;
             GamePanel.Invalidate();
         }
     }

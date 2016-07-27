@@ -18,8 +18,9 @@ namespace AgarIOServer
     {
         public const int GameLoopInterval = 30;
         public const int ServerLoopInterval = 30; // not used right now 
-        public const int MaxLocationX = 2400;
-        public const int MaxLocationY = 2400;
+        public const int MaxLocationX = 9000;
+        public const int MaxLocationY = 9000;
+        public const int MaxNumberOfFood = 300;
         public static Random RandomG = new Random();
         public ConnectionManager ConnectionManager { get; set; }
         public GameState GameState { get; set; }
@@ -46,6 +47,11 @@ namespace AgarIOServer
         public GameState GenerateNewGameState()
         {
             GameState state = new GameState();
+            // generate food
+            for (int i = 0; i < MaxNumberOfFood; i++)
+            {
+                state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(10, 70)));
+            }
             return state;
         }
 
@@ -87,7 +93,7 @@ namespace AgarIOServer
 
         private void AddNewPlayer(string playerName)
         {
-            Player newPlayer = new Player(playerName);
+            Player newPlayer = new Player(playerName, GameState);
             lock (GameState.Players)
             {
                 GameState.Players.Add(newPlayer);
@@ -111,51 +117,5 @@ namespace AgarIOServer
             ConnectionManager.EndClientConnection(playerName);
         }
 
-        private void ProcessClientCommand(string playerName, string msg)
-        {
-            string[] tokens = msg.Split();
-            float x = 0, y = 0;
-            int time = 0;
-            lock (GameState)
-            {
-                switch (tokens[0])
-                {
-                    case "STOP":
-                        lock (GameState)
-                            GameState.Players.RemoveAll(p => p.Name == playerName);
-                        ConnectionManager.EndClientConnection(playerName);
-                        break;
-                    case "CONNECTED":
-                        Player newPlayer = new Player(playerName);
-                        lock (GameState)
-                            GameState.Players.Add(newPlayer);
-                        break;
-                }
-
-                if (tokens.Length == 4 && int.TryParse(tokens[1], out time) && float.TryParse(tokens[2], out x) && float.TryParse(tokens[3], out y))
-                {
-                    switch (tokens[0])
-                    {
-                        case "MOVE":
-                            if (ConnectionManager.Connections.Find(p => p.PlayerName == playerName).LastMovementTime < time)
-                            {
-                                new MovementAction(x, y, playerName).Process(GameState);
-                                ConnectionManager.Connections.Find(p => p.PlayerName == playerName).LastMovementTime = time;
-                            }
-                            break;
-                        case "DIVIDE":
-                            new DivideAction(x, y, playerName).Process(GameState);
-                            break;
-                        case "GIVEFOOD":
-                            new FoodAction(x, y, playerName).Process(GameState);
-                            break;
-                    }
-                }
-                GameState.Version++;
-                lock (ConnectionManager.Connections)
-                    ConnectionManager.SendToAllClients(new UpdateState(GameState));
-            }
-            
-        }
     }
 }

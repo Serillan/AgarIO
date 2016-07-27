@@ -55,16 +55,17 @@ namespace AgarIOServer
                     var connectionResult = await loginServer.ReceiveAsync();
                     var message = GetMessageFromConnectionResult(connectionResult);
 
-                    if (message.Split().Length == 2 && message.Split()[0] == "CONNECT")
+                    if (message.Split().Length >= 2 && message.Split()[0] == "CONNECT")
                     {
                         var tokens = message.Split();
-                        var name = tokens[1];
+                        var name = message.Substring(8);
+
                         string authorizerOutputMessage;
 
                         if (clientAuthorizer(name, connectionResult.RemoteEndPoint, out authorizerOutputMessage))
                         {
                             loginServer.Connect(connectionResult.RemoteEndPoint);
-                            conn.PlayerName = tokens[1];
+                            conn.PlayerName = name;
                             conn.LastMovementTime = 0;
                             break;
                         }
@@ -138,10 +139,10 @@ namespace AgarIOServer
                    // Console.WriteLine("Received {0} command from {1}", command.GetType(), PlayerName);
                     return command;
                 }
-                catch (Exception ex)
+                catch (ProtoBuf.ProtoException ex)
                 {
                     // ignore this type of exception (multiple ACK ...), wait for first command
-                    Console.WriteLine(ex.ToString());
+                    //Console.WriteLine(ex.ToString());
                 }
             }
         }

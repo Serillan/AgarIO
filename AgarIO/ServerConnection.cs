@@ -47,7 +47,7 @@ namespace AgarIO
                     if (res.Split()[0] == "CONNECTED")
                     {
                         conn.UdpServer.Connect(adress, int.Parse(res.Split()[1]));
-                        for (int j = 0; j < 1; j++)  // TODO 3 should be there
+                        for (int j = 0; j < 3; j++)  // TODO 3 should be there
                             conn.SendAsync("ACK");
                         return conn;
                     }
