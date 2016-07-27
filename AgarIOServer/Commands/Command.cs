@@ -14,6 +14,7 @@ namespace AgarIOServer.Commands
     [ProtoInclude(3, typeof(Move))]
     [ProtoInclude(4, typeof(Stop))]
     [ProtoInclude(5, typeof(UpdateState))]
+    [ProtoInclude(6, typeof(Eject))]
     abstract class Command
     {
         public virtual void Process(GameServer game, string playerName) { }

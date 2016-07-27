@@ -69,6 +69,7 @@
     <Compile Include="ClientConnection.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Divide.cs" />
+    <Compile Include="Commands\Eject.cs" />
     <Compile Include="Commands\Invalidate.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Stop.cs" />

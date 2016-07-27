@@ -97,11 +97,14 @@ namespace AgarIO
                 //   part.Y - r, 2 * r, 2 * r);
                 g.FillEllipse(brush, part.X - radius,
                    part.Y - radius, 2 * radius, 2 * radius);
-                Font myFont = new Font("Arial", 14);
 
-                var sizeOfText = g.MeasureString(name, myFont);
-                g.DrawString(name, myFont, Brushes.Black, part.X - sizeOfText.Width / 2, part.Y - sizeOfText.Height / 2);
+                if (!part.IsBeingEjected) // draw name of player in the centre of the part
+                {
+                    Font myFont = new Font("Arial", 14);
 
+                    var sizeOfText = g.MeasureString(name, myFont);
+                    g.DrawString(name, myFont, Brushes.Black, part.X - sizeOfText.Width / 2, part.Y - sizeOfText.Height / 2);
+                }
                 //if (state.CurrentPlayer.Parts.Contains(part))
                 //    e.Graphics.DrawString($"{part.X} {part.Y}", myFont, Brushes.Black, 10, 10);
             }
@@ -137,7 +140,7 @@ namespace AgarIO
 
             StringBuilder scoreText = new StringBuilder();
             var sortedPlayers = (from player in State.Players
-                             orderby player.Mass
+                             orderby player.Mass descending
                              select player).ToList();
 
             for (int i = 0; i < sortedPlayers.Count; i++)

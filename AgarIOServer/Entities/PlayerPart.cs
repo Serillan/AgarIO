@@ -19,7 +19,19 @@ namespace AgarIOServer.Entities
         public bool IsNewDividedPart { get; set; }
 
         [ProtoBuf.ProtoMember(4)]
+        public bool IsBeingEjected { get; set; }
+
+        [ProtoBuf.ProtoMember(6)]
+        public float EjectedVX { get; set; }
+
+        [ProtoBuf.ProtoMember(7)]
+        public float EjectedVY { get; set; }
+
+
+
+        [ProtoBuf.ProtoMember(5)]
         public int MergeTime { get; set; }
+
 
         [ProtoBuf.ProtoIgnore]
         public const byte DefaulDivisionTime = 15;
@@ -29,7 +41,9 @@ namespace AgarIOServer.Entities
         {
             get
             {
-                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 5) : 20 / NthRoot(Mass, 5)));
+                if (IsBeingEjected)
+                    return 40;
+                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 3) : 20 / NthRoot(Mass, 5)));
             }
         }
 

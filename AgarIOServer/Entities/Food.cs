@@ -14,7 +14,7 @@ namespace AgarIOServer.Entities
 
         private Food() { }
 
-        public Food(int x, int y, int mass)
+        public Food(float x, float y, int mass)
         {
             this.X = x;
             this.Y = y;

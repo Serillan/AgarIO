@@ -52,10 +52,12 @@
   <ItemGroup>
     <Compile Include="Actions\Action.cs" />
     <Compile Include="Actions\DivideAction.cs" />
+    <Compile Include="Actions\EjectAction.cs" />
     <Compile Include="Actions\FoodAction.cs" />
     <Compile Include="Actions\MovementAction.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Divide.cs" />
+    <Compile Include="Commands\Eject.cs" />
     <Compile Include="Commands\Invalidate.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Stop.cs" />

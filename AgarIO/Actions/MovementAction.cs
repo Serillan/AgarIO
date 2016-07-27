@@ -38,8 +38,15 @@ namespace AgarIO.Actions
             {
                 //float vX = (float)(X - GraphicsEngine.GamePanelWidth / 2);
                 //float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
+
                 float vX = X - part.X;
                 float vY = Y - part.Y;
+
+                if (part.IsBeingEjected)
+                {
+                    vX = part.EjectedVX;
+                    vY = part.EjectedVY;
+                }
                 
 
                 // normalize
@@ -76,8 +83,9 @@ namespace AgarIO.Actions
                 {
                     if (p == part)
                         continue;
+
                     if (AreInCollision(nextX, nextY, part.Radius, p) && (part.MergeTime > 0 || p.MergeTime > 0) &&
-                        part.DivisionTime == 0 && p.DivisionTime == 0)
+                        part.DivisionTime == 0 && p.DivisionTime == 0 && !p.IsBeingEjected && !part.IsBeingEjected)
                     {
                         var dx = p.X - nextX;
                         var dy = p.Y - nextY;

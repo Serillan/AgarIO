@@ -27,9 +27,9 @@ namespace AgarIO.Entities
             get
             {
                 float x = 0;
-                foreach (var part in Parts)
+                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
                     x += part.X;
-                return x / Parts.Count;
+                return x / Parts.Where(p => !p.IsBeingEjected).Count();
             }
         }
         [ProtoBuf.ProtoIgnore]
@@ -38,9 +38,9 @@ namespace AgarIO.Entities
             get
             {
                 float y = 0;
-                foreach (var part in Parts)
+                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
                     y += part.Y;
-                return y / Parts.Count;
+                return y / Parts.Where(p => !p.IsBeingEjected).Count();
             }
         }
         [ProtoBuf.ProtoIgnore]
@@ -49,7 +49,7 @@ namespace AgarIO.Entities
             get
             {
                 var mass = 0;
-                foreach (var part in Parts)
+                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
                     mass += part.Mass;
                 return mass;
             }

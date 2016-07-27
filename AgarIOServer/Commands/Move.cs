@@ -118,6 +118,7 @@ namespace AgarIOServer.Commands
                         //Console.WriteLine("Entered player lock  " + playerName);
                         List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
                         List<PlayerPart> partToBeMerged = new List<PlayerPart>();
+                        List<PlayerPart> ejectedPartsToBeRemoved = new List<PlayerPart>();
 
                         foreach (var part in player.Parts)
                         {
@@ -134,9 +135,23 @@ namespace AgarIOServer.Commands
                                 partToBeMerged.Add(part);
                             part.IsNewDividedPart = false;
 
+                            if (part.DivisionTime == 0 && part.IsBeingEjected)
+                            {
+                                ejectedPartsToBeRemoved.Add(part);
+                                lock (state.Food)
+                                {
+                                    state.Food.Add(new Food(part.X, part.Y, part.Mass) {
+                                        Color = player.Color
+                                    });
+                                }
+                            }
+
                            // part.Mass++;
                            // toBeInvalidated = true;
                         }
+
+                        if (player.Parts.RemoveAll(p => ejectedPartsToBeRemoved.Contains(p)) > 0)
+                            toBeInvalidated = true;
 
                         foreach (var part in partToBeMerged)
                         {

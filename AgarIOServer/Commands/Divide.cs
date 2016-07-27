@@ -24,7 +24,8 @@ namespace AgarIOServer.Commands
                     return;
 
                 List<PlayerPart> newParts = new List<PlayerPart>();
-                byte i = 0;
+                var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
+                var i = 0;
 
                 foreach (var part in player.Parts)
                 {
@@ -33,7 +34,7 @@ namespace AgarIOServer.Commands
                         newParts.Add(new PlayerPart()
                         {
                             DivisionTime = 0,
-                            Identifier = i++,
+                            Identifier = (byte)freeIdentifiers[i++],
                             IsNewDividedPart = false,
                             Mass = part.Mass / 2,
                             X = part.X,
@@ -44,7 +45,7 @@ namespace AgarIOServer.Commands
                         newParts.Add(new PlayerPart()
                         {
                             DivisionTime = PlayerPart.DefaulDivisionTime,
-                            Identifier = i++,
+                            Identifier = (byte)freeIdentifiers[i++],
                             IsNewDividedPart = true,
                             Mass = part.Mass / 2,
                             X = part.X,
