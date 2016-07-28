@@ -20,7 +20,7 @@ namespace AgarIO
     class Game
     {
         public ServerConnection ServerConnection { get; set; }
-        public int Time { get; set; }
+        public long Time { get; set; }
         public GameState GameState { get; set; }
         public bool IsPredictionValid { get; set; }
         public string PlayerName { get; set; }

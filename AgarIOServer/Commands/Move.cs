@@ -20,7 +20,7 @@ namespace AgarIOServer.Commands
         public List<Tuple<int, float, float, float>> Movement { get; set; }
 
         [ProtoBuf.ProtoMember(2)]
-        public int Time { get; set; }
+        public long Time { get; set; }
 
         public override void Process(GameServer server, string playerName)
         {
@@ -174,8 +174,11 @@ namespace AgarIOServer.Commands
                             }
                         }
 
-                        // eating food
+                        // viruses
+                        if (ProcessViruses(player, server))
+                            toBeInvalidated = true;
 
+                        // eating food
                         var eatenFood = new HashSet<Food>();
                         var newFood = new List<Food>();
                         lock (server.GameState.Food)
@@ -189,7 +192,7 @@ namespace AgarIOServer.Commands
 
                                         if (movement.Item4 != part.Mass) // invalid prediction
                                         {
-                                            Console.WriteLine($"Invalid food prediction correct - {part.Mass} got - {movement.Item4}");
+                                            Console.WriteLine($"Invalid food prediction mass before eating - {part.Mass - food.Mass} correct - {part.Mass} got - {movement.Item4}");
                                             toBeInvalidated = true;
                                         }
 
@@ -265,17 +268,16 @@ namespace AgarIOServer.Commands
 
                         }
 
-                        if (ProcessViruses(player, server))
-                            toBeInvalidated = true;
-
                         if (toBeInvalidated)
                             server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
 
                     case MovementCheckResult.OtherError:
+                        // invalidate here would have effect on ejecting teleportation etc. (in case of higher latency)
+
                         //server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement command!"));
                         //server.RemovePlayer(playerName, "Invalid movement command!");
-                        server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
+                        //server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
                 }
                 player.LastMovementTime = Time;
@@ -338,7 +340,7 @@ namespace AgarIOServer.Commands
 
                 if (distance == 0 && !IsOnEdge(movement.Item2, movement.Item3))
                 {
-                    Console.WriteLine("edge error");
+                    //Console.WriteLine("edge error");
                    // res = MovementCheckResult.OtherError;
                 }
 
@@ -355,7 +357,7 @@ namespace AgarIOServer.Commands
                 {
                     Console.WriteLine("Distance error, Distance : {0}, Max Allowed : {1} | deltaMovementTime : {2}",
                        distance, part.Speed, deltaMovementTime);
-                    //res = MovementCheckResult.Overspeed;
+                    res = MovementCheckResult.Overspeed;
                 }
 
                 // rollback
@@ -391,7 +393,7 @@ namespace AgarIOServer.Commands
         {
             var random = GameServer.RandomG;
             return new Food(random.Next(GameServer.MaxLocationX), random.Next(GameServer.MaxLocationY),
-                random.Next(10, 70));
+                random.Next(GameServer.MinSizeOfFood, GameServer.MaxSizeOfFood));
         }
 
         private bool ProcessViruses(Player player, GameServer server)
@@ -459,7 +461,6 @@ namespace AgarIOServer.Commands
                             }
 
                             server.GameState.Viruses.Add(new Virus(playersParts));
-
                         }
                     }
                     else if (part.IsBeingEjected && (virus = server.GameState.Viruses.Find(v => CanBeEatenByVirus(v, part))) != null)

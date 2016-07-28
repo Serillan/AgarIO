@@ -19,7 +19,7 @@ namespace AgarIO.Commands
         public List<Tuple<int, float, float, float>> Movement { get; set; }
 
         [ProtoBuf.ProtoMember(2)]
-        public int Time { get; set; }
+        public long Time { get; set; }
 
     }
 }

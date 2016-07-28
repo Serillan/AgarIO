@@ -19,7 +19,7 @@ namespace AgarIO.Entities
         public byte[] Color { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public int LastMovementTime { get; set; }
+        public long LastMovementTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         new public float X

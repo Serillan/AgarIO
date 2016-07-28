@@ -43,7 +43,7 @@ namespace AgarIO.Entities
             get
             {
                 if (IsBeingEjected)
-                    return (OldRadius * 4 / DefaulDivisionTime) * Game.GameLoopInterval / 30f;
+                    return (OldRadius * 12 / DefaulDivisionTime) * Game.GameLoopInterval / 30f;
                 return (DivisionTime > 0 ? (this.Radius * 8 / DefaulDivisionTime) : 20 / NthRoot(Mass, 5)) * Game.GameLoopInterval / 30f;
             }
         }

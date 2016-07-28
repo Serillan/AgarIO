@@ -166,7 +166,7 @@ namespace AgarIOServer
             return true;
         }
 
-        public void SendToAllClients(Commands.Command command)
+        public void SendToAllClients(Command command)
         {
             var stream = new MemoryStream();
             Serializer.Serialize(stream, command);

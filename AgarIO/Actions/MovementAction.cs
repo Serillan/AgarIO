@@ -134,11 +134,13 @@ namespace AgarIO.Actions
                 // food eating prediction
                 var eatenFood = new HashSet<Food>();
 
-                foreach (var food in game.GameState.Food)
+                foreach (var food in state.Food)
                     if (CanBeEaten(food, nextX, nextY, part))
                     {
                         part.Mass += food.Mass;
                         eatenFood.Add(food);
+                        if (!state.EatenFoodPrediction.Contains(food))
+                            state.EatenFoodPrediction.Add(food);
                     }
                 game.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
 
@@ -183,7 +185,7 @@ namespace AgarIO.Actions
         private bool CanBeEaten(Food food, float nextX, float nextY, PlayerPart part)
         {
             var dx = food.X - nextX;
-            var dy = food.Y - nextX;
+            var dy = food.Y - nextY;
             var distance = Math.Sqrt(dx * dx + dy * dy);
 
             if (distance < part.Radius - food.Radius &&    // is completely inside

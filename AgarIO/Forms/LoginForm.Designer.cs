@@ -39,6 +39,7 @@
             // 
             this.LoginButton.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.LoginButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.LoginButton.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.LoginButton.Location = new System.Drawing.Point(333, 262);
             this.LoginButton.Name = "LoginButton";
             this.LoginButton.Size = new System.Drawing.Size(176, 36);
@@ -58,6 +59,7 @@
             // 
             // panel1
             // 
+            this.panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.panel1.Controls.Add(this.InfoLabel);
             this.panel1.Controls.Add(this.LoginTextBox);
             this.panel1.Controls.Add(this.LoginButton);
@@ -83,10 +85,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(877, 647);
             this.Controls.Add(this.panel1);
+            this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.Name = "LoginForm";
-            this.Text = "LoginForm";
+            this.Text = "DarkAgar";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);

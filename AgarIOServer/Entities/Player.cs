@@ -17,10 +17,10 @@ namespace AgarIOServer.Entities
         public List<PlayerPart> Parts { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public int LastMovementTime { get; set; }
+        public long LastMovementTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public int FirstMovementTime { get; set; }
+        public long FirstMovementTime { get; set; }
 
         [ProtoBuf.ProtoIgnore]
         public long FirstMovementServerTime { get; set; }

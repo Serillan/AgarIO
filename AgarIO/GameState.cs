@@ -14,14 +14,23 @@ namespace AgarIO
     {
         [ProtoBuf.ProtoMember(1)]
         public List<Player> Players { get; set; }
+
         [ProtoBuf.ProtoMember(2)]
         public List<Food> Food { get; set; }
+
         [ProtoBuf.ProtoMember(3)]
         public List<Virus> Viruses { get; set; }
+
+        [ProtoBuf.ProtoMember(4)]
+        public long Version;
+
         [ProtoBuf.ProtoIgnore]
         public Player CurrentPlayer { get; set; }
-        [ProtoBuf.ProtoMember(28)]
-        public int Version;
+
+        [ProtoBuf.ProtoIgnore]
+        public List<Food> EatenFoodPrediction { get; set; }
+
+
 
     }
 }

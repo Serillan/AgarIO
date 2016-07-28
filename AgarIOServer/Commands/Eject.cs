@@ -43,7 +43,7 @@ namespace AgarIOServer.Commands
 
                 player.Parts.Add(new PlayerPart()
                 {
-                    Mass = 50,
+                    Mass = GameServer.BlobSize,
                     DivisionTime = PlayerPart.DefaulDivisionTime,
                     IsBeingEjected = true,
                     Identifier = (byte)freeIdentifier,
@@ -55,7 +55,7 @@ namespace AgarIOServer.Commands
                     IsNewDividedPart = true,
                     OldRadius = nearestPart.Radius
                 });
-                nearestPart.Mass -= 50;
+                nearestPart.Mass -= GameServer.BlobSize;
 
             }
             game.ConnectionManager.SendToClient(player.Name, new Invalidate("Ejection"));

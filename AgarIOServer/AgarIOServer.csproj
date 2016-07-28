@@ -83,7 +83,6 @@
     <Compile Include="GameServer.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="GameState.cs" />
-    <Compile Include="GameStateChange.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

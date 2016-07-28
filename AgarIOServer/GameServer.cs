@@ -20,11 +20,14 @@ namespace AgarIOServer
         public const int ServerLoopInterval = 30; // not used right now 
         public const int MaxLocationX = 2400; // 9000
         public const int MaxLocationY = 2400;
-        public const int PlayerStartSize = 400; // 400
+        public const int PlayerStartSize = 100; // 400
         public const int MinimumDivisionSize = 200;
-        public const int DefaultVirusSize = 100;
-        public const int MaxVirusSize = 800;
-        public const int MaxNumberOfFood = 80; // 300
+        public const int DefaultVirusSize = 600;
+        public const int MaxVirusSize = 1000;
+        public const int BlobSize = 20;
+        public const int MinSizeOfFood = 5;
+        public const int MaxSizeOfFood = 15;
+        public const int MaxNumberOfFood = 40; // 300
         public const int MaxNumberOfViruses = 10; // 100
         public static Random RandomG = new Random();
         public ConnectionManager ConnectionManager { get; set; }
@@ -58,7 +61,7 @@ namespace AgarIOServer
             {
                 for (int i = 0; i < MaxNumberOfFood; i++)
                 {
-                    state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(10, 70)));
+                    state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(GameServer.MinSizeOfFood, GameServer.MaxSizeOfFood)));
                 }
             }
 
@@ -101,11 +104,14 @@ namespace AgarIOServer
         private void ProcessClientCommand(string playerName, Command command)
         {
             Interlocked.Add(ref GameState.Version, 1);
+
+            GameState.StateLock.EnterReadLock(); // paralell processing is allowed
             command.Process(this, playerName);
-            lock (GameState) // TODO - with higher server load - it can be done in loop
-            {
-                ConnectionManager.SendToAllClients(new UpdateState(GameState));
-            }
+            GameState.StateLock.ExitReadLock();
+
+            GameState.StateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
+            ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            GameState.StateLock.ExitWriteLock();
         }
 
         private void AddNewPlayer(string playerName)

@@ -13,9 +13,6 @@ namespace AgarIO.Commands
         [ProtoBuf.ProtoMember(1)]
         public GameState GameState { get; set; }
 
-        [ProtoBuf.ProtoMember(2)]
-        public GameStateChange GameStateChange { get; set; }
-
         public UpdateState(GameState state)
         {
             this.GameState = state;
@@ -27,14 +24,6 @@ namespace AgarIO.Commands
         private UpdateState() { }
 
         public override void Process(Game game)
-        {
-            if (GameState != null)
-                ProcessGameState(game);
-            else
-                ProcessGameStateChange(game);
-        }
-
-        private void ProcessGameState(Game game)
         {
             var oldGameState = game.GameState;
             if (oldGameState != null && oldGameState.Version > GameState.Version)
@@ -50,46 +39,24 @@ namespace AgarIO.Commands
             if (oldGameState != null && oldGameState.Version > GameState.Version)
                 return;
 
+
             // prediction
             if (oldCurrentPlayer != null && game.IsPredictionValid)
-                currentPlayer.Parts = oldCurrentPlayer.Parts;
-
-            GameState.CurrentPlayer = currentPlayer;
-            game.IsPredictionValid = true;
-        }
-
-        private void ProcessGameStateChange(Game game)
-        {
-            var oldGameState = game.GameState;
-            if (oldGameState != null && oldGameState.Version > GameState.Version)
-                return;
-
-            var newGameState = new GameState();
-            newGameState.Players = GameStateChange.Players;
-            newGameState.Viruses = GameStateChange.Viruses;
-
-            // food
-            if (game.GameState?.Food != null)
             {
-                newGameState.Food = game.GameState.Food;
-                GameStateChange.RemovedFood.ForEach(f => newGameState.Food.Remove(f));
-                GameStateChange.AddedFood.ForEach(f => newGameState.Food.Add(f));
+                if (oldGameState.EatenFoodPrediction == null)
+                    game.GameState.EatenFoodPrediction = new List<Food>();
+                else
+                {
+                    game.GameState.EatenFoodPrediction = oldGameState.EatenFoodPrediction;
+                    game.GameState.Food.RemoveAll(f => game.GameState.EatenFoodPrediction.Contains(f));
+                }
+
+                currentPlayer.Parts = oldCurrentPlayer.Parts;
             }
             else
-                newGameState.Food = GameStateChange.AddedFood;
-
-            Player oldCurrentPlayer = null;
-            Player currentPlayer = GameState.Players.Find(p => p.Name == game.PlayerName);
-
-            if (oldGameState?.CurrentPlayer != null)
-                oldCurrentPlayer = oldGameState.CurrentPlayer;
-
-            if (oldGameState != null && oldGameState.Version > GameState.Version)
-                return;
-
-            // prediction
-            if (oldCurrentPlayer != null && game.IsPredictionValid)
-                currentPlayer.Parts = oldCurrentPlayer.Parts;
+            {
+                game.GameState.EatenFoodPrediction = new List<Food>();
+            }
 
             GameState.CurrentPlayer = currentPlayer;
             game.IsPredictionValid = true;
