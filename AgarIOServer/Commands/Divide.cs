@@ -29,7 +29,7 @@ namespace AgarIOServer.Commands
 
                 foreach (var part in player.Parts)
                 {
-                    if (part.Mass >= 200)
+                    if (part.Mass >= GameServer.MinimumDivisionSize)
                     {
                         newParts.Add(new PlayerPart()
                         {

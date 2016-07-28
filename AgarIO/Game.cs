@@ -31,7 +31,7 @@ namespace AgarIO
 
         public const int MaxLocationX = 9000;
         public const int MaxLocationY = 9000;
-        const int GameLoopInterval = 30;
+        public const int GameLoopInterval = 16;
 
         /// <summary>
         /// Used for avoiding multiple game closes.

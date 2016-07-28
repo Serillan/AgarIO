@@ -140,14 +140,15 @@ namespace AgarIOServer.Commands
                                 ejectedPartsToBeRemoved.Add(part);
                                 lock (state.Food)
                                 {
-                                    state.Food.Add(new Food(part.X, part.Y, part.Mass) {
+                                    state.Food.Add(new Food(part.X, part.Y, part.Mass)
+                                    {
                                         Color = player.Color
                                     });
                                 }
                             }
 
-                           // part.Mass++;
-                           // toBeInvalidated = true;
+                            // part.Mass++;
+                            // toBeInvalidated = true;
                         }
 
                         if (player.Parts.RemoveAll(p => ejectedPartsToBeRemoved.Contains(p)) > 0)
@@ -164,7 +165,7 @@ namespace AgarIOServer.Commands
                                 toBeInvalidated = true;
                             }
                         }
-                       
+
                         // eating food
 
                         var eatenFood = new HashSet<Food>();
@@ -228,7 +229,7 @@ namespace AgarIOServer.Commands
                                         toBeInvalidated = true;
                                         server.ConnectionManager.SendToClient(otherPlayer.Name, new Invalidate("Eating"));
                                     }
-                                    
+
                                     otherPlayer.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
                                     player.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
 
@@ -249,7 +250,11 @@ namespace AgarIOServer.Commands
                             }
 
                         }
-                    if (toBeInvalidated)
+
+                        if (ProcessViruses(player, server))
+                            toBeInvalidated = true;
+
+                        if (toBeInvalidated)
                             server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
 
@@ -351,6 +356,197 @@ namespace AgarIOServer.Commands
                 random.Next(10, 70));
         }
 
+        private bool ProcessViruses(Player player, GameServer server)
+        {
+            var res = false;
+            lock (server.GameState.Viruses)
+            {
+                var newParts = new List<PlayerPart>();
+
+                foreach (var part in player.Parts)
+                {
+                    var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
+                    var i = 0;
+                    Virus virus;
+
+                    if (player.Parts.Count < 16 && server.GameState.Viruses.Exists(v => CanBeDividedByVirus(v, part)))
+                    {
+                        res = true;
+
+                        newParts.Add(new PlayerPart()
+                        {
+                            DivisionTime = 0,
+                            Identifier = (byte)freeIdentifiers[i++],
+                            IsNewDividedPart = false,
+                            Mass = part.Mass / 2,
+                            X = part.X,
+                            Y = part.Y,
+                            MergeTime = (int)Math.Round((0.02 * (part.Mass / 2) + 5) * 1000 / GameServer.GameLoopInterval),
+                        });
+
+                        newParts.Add(new PlayerPart()
+                        {
+                            DivisionTime = PlayerPart.DefaulDivisionTime,
+                            Identifier = (byte)freeIdentifiers[i++],
+                            IsNewDividedPart = true,
+                            Mass = part.Mass / 2,
+                            X = part.X,
+                            Y = part.Y,
+                            MergeTime = (int)Math.Round((0.02 * (part.Mass / 2) + 5) * 1000 / GameServer.GameLoopInterval),
+                        });
+
+                    }
+                    else if (player.Parts.Count >= 16 && (virus = server.GameState.Viruses.Find(v => CanBeEaten(v, part))) != null) // eat virus
+                    {
+                        res = true;
+                        server.GameState.Viruses.Remove(virus);
+                        part.Mass += virus.Mass;
+                        newParts.Add(part);
+
+                        // generate new virus
+                        var playersParts = new List<PlayerPart>();
+                        lock (server.GameState.Players)
+                        {
+                            foreach (var otherPlayer in server.GameState.Players)
+                            {
+                                if (Monitor.TryEnter(otherPlayer)) // -> virus sometimes might spawn on the player
+                                {
+                                    foreach (var otherPlayerPart in otherPlayer.Parts)
+                                    {
+                                        playersParts.Add(otherPlayerPart); // working with other player fields is thread safe
+                                    }
+
+                                    Monitor.Exit(otherPlayer);
+                                }
+                            }
+
+                            server.GameState.Viruses.Add(new Virus(playersParts));
+
+                        }
+                    }
+                    else if (part.IsBeingEjected && (virus = server.GameState.Viruses.Find(v => CanBeEatenByVirus(v, part))) != null)
+                    {
+                        res = true;
+                        virus.Mass += part.Mass;
+
+                        if (virus.Mass > GameServer.MaxVirusSize)
+                            DivideVirus(virus, server);
+
+                        // part wont be added to newParts -> therefore will be removed
+                    }
+                    else
+                        newParts.Add(part);
+                }
+                player.Parts = newParts;
+
+                // virus animation
+                foreach (var virus in server.GameState.Viruses)
+                {
+                    if (virus.AnimationEndTime == virus.AnimationStartTime)
+                        continue; // no animation
+
+                    var animationTime = ((double)Stopwatch.GetTimestamp() - virus.AnimationStartTime) /
+                        (virus.AnimationEndTime - virus.AnimationStartTime);
+
+                    if (animationTime >= 1)
+                    {
+                        virus.X = virus.EndX;
+                        virus.Y = virus.EndY;
+                        virus.AnimationStartTime = virus.AnimationEndTime = 0;
+                    }
+                    else
+                    {
+                        virus.X = (float)(virus.StartX + animationTime * (virus.EndX - virus.StartX));
+                        virus.Y = (float)(virus.StartY + animationTime * (virus.EndY - virus.StartY));
+                    }
+                }
+            }
+            return res;
+        }
+
+        private void DivideVirus(Virus virus, GameServer server)
+        {
+            var numberOfNewViruses = virus.Mass / GameServer.DefaultVirusSize;
+            var newViruses = new List<Virus>();
+
+            for (int i = 0; i < numberOfNewViruses; i++)
+            {
+                var newVirus = new Virus();
+                newVirus.Mass = GameServer.DefaultVirusSize;
+
+                var maxDiff = virus.Radius * 6;
+
+                var minX = (int)Math.Round(Math.Max(0, virus.X - maxDiff));
+                var maxX = (int)Math.Round(Math.Min(GameServer.MaxLocationX, virus.X + maxDiff));
+                var minY = (int)Math.Round(Math.Max(0, virus.Y - maxDiff));
+                var maxY = (int)Math.Round(Math.Min(GameServer.MaxLocationY, virus.Y + maxDiff));
+
+                do
+                {
+                    newVirus.EndX = GameServer.RandomG.Next(minX, maxX);
+                    newVirus.EndY = GameServer.RandomG.Next(minY, maxY);
+                } while (newViruses.Exists(v => WillBeInCollision(newVirus, v)));
+
+                newVirus.AnimationStartTime = Stopwatch.GetTimestamp();
+                newVirus.AnimationEndTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency * 1; // 5s animation
+                newVirus.StartX = virus.X;
+                newVirus.StartY = virus.Y;
+                newViruses.Add(newVirus);
+                server.GameState.Viruses.Add(newVirus);
+            }
+
+            server.GameState.Viruses.Remove(virus);
+        }
+
+        private bool WillBeInCollision(Virus virus1, Virus virus2)
+        {
+            var dx = virus2.EndX - virus1.EndX;
+            var dy = virus2.EndY - virus1.EndY;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            return distance < virus1.Radius + virus2.Radius;
+        }
+
+        private bool CanBeDividedByVirus(Virus virus, PlayerPart part)
+        {
+            if (part.IsBeingEjected)
+                return false;
+
+            if (part.Mass < GameServer.MinimumDivisionSize)
+                return false;
+
+            var dx = virus.X - part.X;
+            var dy = virus.Y - part.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            return distance <= 0.8 * virus.Radius + part.Radius &&    // 20% inside
+                part.Mass > 1.25 * virus.Mass;
+        }
+
+        private bool CanBeEatenByVirus(Virus virus, PlayerPart part)
+        {
+            if (!part.IsBeingEjected)
+                return false;
+
+            var dx = virus.X - part.X;
+            var dy = virus.Y - part.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            return distance <= virus.Radius;
+        }
+
+        private bool CanBeEaten(Virus virus, PlayerPart part)
+        {
+            if (part.IsBeingEjected)
+                return false;
+
+            var dx = virus.X - part.X;
+            var dy = virus.Y - part.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            return distance < part.Radius - virus.Radius &&
+                part.Mass > 1.25 * virus.Mass;
+        }
+
         private bool CanBeMerged(PlayerPart part1, PlayerPart part2)
         {
             if (part1.MergeTime > 0 || part2.MergeTime > 0)
@@ -363,6 +559,9 @@ namespace AgarIOServer.Commands
 
         private bool CanBeEaten(PlayerPart eatingPart, PlayerPart partToBeEaten)
         {
+            if (eatingPart.IsBeingEjected)
+                return false;
+
             var dx = partToBeEaten.X - eatingPart.X;
             var dy = partToBeEaten.Y - eatingPart.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);

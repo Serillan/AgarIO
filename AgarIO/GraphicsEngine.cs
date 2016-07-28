@@ -61,6 +61,7 @@ namespace AgarIO
             DrawMatrix(g);
             DrawFood(g);
             DrawPlayers(g);
+            DrawViruses(g);
             DrawScoreTable(g);
         }
 
@@ -130,6 +131,25 @@ namespace AgarIO
                 //   part.Y - r, 2 * r, 2 * r);
                 g.FillEllipse(brush, food.X - food.Radius,
                    food.Y - food.Radius, 2 * food.Radius, 2 * food.Radius);
+            }
+        }
+
+        private void DrawViruses(Graphics g)
+        {
+            if (State.Viruses == null)
+                return;
+            foreach (var virus in State.Viruses)
+            {
+                Brush brush = new HatchBrush(HatchStyle.ZigZag, Color.DarkGreen);
+                //g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
+                //   part.Y - r, 2 * r, 2 * r);
+                var r = virus.Radius;
+                g.FillEllipse(brush, virus.X - r,
+                   virus.Y - r, 2 * r, 2 * r);
+                brush = new SolidBrush(Color.DarkGreen);
+                r *= 0.85f;
+                g.FillEllipse(brush, virus.X - r,
+                   virus.Y - r, 2 * r, 2 * r);
             }
         }
 

@@ -31,7 +31,7 @@ namespace AgarIOServer.Commands
                 byte i = 0;
 
                 var nearestPart = (from part in player.Parts
-                                   where part.Mass > 200
+                                   where part.Mass >= GameServer.MinimumDivisionSize
                                    orderby Distance(X, Y, part) ascending
                                    select part).FirstOrDefault();
 

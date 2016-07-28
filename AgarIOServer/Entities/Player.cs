@@ -79,7 +79,7 @@ namespace AgarIOServer.Entities
             this.Name = name;
             this.Parts = new List<PlayerPart>();
             var part = new PlayerPart();
-            part.Mass = 1000;
+            part.Mass = GameServer.PlayerStartSize;
 
             List<PlayerPart> otherPlayerParts;
 
@@ -94,7 +94,8 @@ namespace AgarIOServer.Entities
             {
                 part.X = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationX);
                 part.Y = GameServer.RandomG.Next((int)(Math.Round(this.Radius)), GameServer.MaxLocationY);
-            } while (otherPlayerParts.Exists(p => AreInCollision(part, p)));
+            } while (otherPlayerParts.Exists(p => !IsInSafeDistance(part, p)) || 
+                     state.Viruses.Exists(v => !IsInSafeDistance(part, v)));
 
             part.Identifier = 1;
             Parts.Add(part);
@@ -104,13 +105,23 @@ namespace AgarIOServer.Entities
             GameServer.RandomG.NextBytes(this.Color);
         }
 
-        private bool AreInCollision(PlayerPart part1, PlayerPart part2)
+        private bool IsInSafeDistance(PlayerPart part1, PlayerPart part2)
         {
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            return distance < part1.Radius + part2.Radius;
+            return distance > 2 * (part1.Radius + part2.Radius);
         }
+
+        private bool IsInSafeDistance(PlayerPart part, Virus virus)
+        {
+            var dx = virus.X - part.X;
+            var dy = virus.Y - part.Y;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            return distance > 2 * (virus.Radius + part.Radius);
+        }
+
 
         public Player() { }
     }

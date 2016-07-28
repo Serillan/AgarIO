@@ -16,11 +16,16 @@ namespace AgarIOServer
 {
     class GameServer
     {
-        public const int GameLoopInterval = 30;
+        public const int GameLoopInterval = 16;
         public const int ServerLoopInterval = 30; // not used right now 
         public const int MaxLocationX = 9000;
         public const int MaxLocationY = 9000;
-        public const int MaxNumberOfFood = 300;
+        public const int PlayerStartSize = 10000;
+        public const int MinimumDivisionSize = 200;
+        public const int DefaultVirusSize = 100;
+        public const int MaxVirusSize = 800;
+        public const int MaxNumberOfFood = 300;//300;
+        public const int MaxNumberOfViruses = 20;
         public static Random RandomG = new Random();
         public ConnectionManager ConnectionManager { get; set; }
         public GameState GameState { get; set; }
@@ -47,11 +52,24 @@ namespace AgarIOServer
         public GameState GenerateNewGameState()
         {
             GameState state = new GameState();
+
             // generate food
-            for (int i = 0; i < MaxNumberOfFood; i++)
+            lock (state.Food)
             {
-                state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(10, 70)));
+                for (int i = 0; i < MaxNumberOfFood; i++)
+                {
+                    state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(10, 70)));
+                }
             }
+
+            // generate viruses
+            var playersParts = state.Players.SelectMany(p => p.Parts).ToList();
+            lock (state.Viruses)
+            {
+                for (int i = 0; i < MaxNumberOfViruses; i++)
+                    state.Viruses.Add(new Virus(playersParts));
+            }
+
             return state;
         }
 
@@ -84,7 +102,6 @@ namespace AgarIOServer
         {
             Interlocked.Add(ref GameState.Version, 1);
             command.Process(this, playerName);
-            //Console.WriteLine("sending state");
             lock (GameState) // TODO - with higher server load - it can be done in loop
             {
                 ConnectionManager.SendToAllClients(new UpdateState(GameState));

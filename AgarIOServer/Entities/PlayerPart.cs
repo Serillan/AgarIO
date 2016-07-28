@@ -42,8 +42,8 @@ namespace AgarIOServer.Entities
             get
             {
                 if (IsBeingEjected)
-                    return 40;
-                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 3) : 20 / NthRoot(Mass, 5)));
+                    return (40 + NthRoot(Mass, 1)) * GameServer.GameLoopInterval / 30f;
+                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 3) : 20 / NthRoot(Mass, 5))) * GameServer.GameLoopInterval / 30f;
             }
         }
 
