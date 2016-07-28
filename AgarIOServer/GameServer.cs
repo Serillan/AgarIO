@@ -18,14 +18,14 @@ namespace AgarIOServer
     {
         public const int GameLoopInterval = 16;
         public const int ServerLoopInterval = 30; // not used right now 
-        public const int MaxLocationX = 9000;
-        public const int MaxLocationY = 9000;
-        public const int PlayerStartSize = 400;
+        public const int MaxLocationX = 2400; // 9000
+        public const int MaxLocationY = 2400;
+        public const int PlayerStartSize = 400; // 400
         public const int MinimumDivisionSize = 200;
         public const int DefaultVirusSize = 100;
         public const int MaxVirusSize = 800;
-        public const int MaxNumberOfFood = 300;
-        public const int MaxNumberOfViruses = 100;
+        public const int MaxNumberOfFood = 80; // 300
+        public const int MaxNumberOfViruses = 10; // 100
         public static Random RandomG = new Random();
         public ConnectionManager ConnectionManager { get; set; }
         public GameState GameState { get; set; }

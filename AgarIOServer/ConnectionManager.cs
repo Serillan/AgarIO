@@ -6,6 +6,7 @@ using ProtoBuf;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using AgarIOServer.Commands;
 
 namespace AgarIOServer
 {

@@ -17,7 +17,7 @@ namespace AgarIOServer.Commands
         /// First argument of the tuple is part identifier and other two arguments are new coordinates.
         /// </summary>
         [ProtoBuf.ProtoMember(1)]
-        public List<Tuple<int, float, float>> Movement { get; set; }
+        public List<Tuple<int, float, float, float>> Movement { get; set; }
 
         [ProtoBuf.ProtoMember(2)]
         public int Time { get; set; }
@@ -184,13 +184,19 @@ namespace AgarIOServer.Commands
                                 foreach (var part in player.Parts)
                                     if (CanBeEaten(food, part))
                                     {
+                                        var movement = Movement.Find(t => t.Item1 == part.Identifier);
                                         part.Mass += food.Mass;
+
+                                        if (movement.Item4 != part.Mass) // invalid prediction
+                                        {
+                                            Console.WriteLine($"Invalid food prediction correct - {part.Mass} got - {movement.Item4}");
+                                            toBeInvalidated = true;
+                                        }
+
                                         eatenFood.Add(food);
                                         // new food
                                         newFood.Add(GenerateNewFood());
                                     }
-                            if (eatenFood.Count > 0)
-                                toBeInvalidated = true;
 
                             server.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
                             newFood.ForEach(f => server.GameState.Food.Add(f));

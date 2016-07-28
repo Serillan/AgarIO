@@ -75,6 +75,7 @@
       <DependentUpon>GameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GameState.cs" />
+    <Compile Include="GameStateChange.cs" />
     <Compile Include="GraphicsEngine.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="Forms\LoginForm.cs">

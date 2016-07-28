@@ -12,10 +12,11 @@ namespace AgarIO.Commands
     {
         /// <summary>
         /// Specifies where player parts should be moved.
-        /// First argument of the tuple is part identifier and other two arguments are new coordinates.
+        /// First argument of the tuple is part identifier, second and third arguments are new coordinates
+        /// and fourth is new predicted mass.
         /// </summary>
         [ProtoBuf.ProtoMember(1)]
-        public List<Tuple<int, float, float>> Movement { get; set; }
+        public List<Tuple<int, float, float, float>> Movement { get; set; }
 
         [ProtoBuf.ProtoMember(2)]
         public int Time { get; set; }

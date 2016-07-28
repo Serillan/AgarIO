@@ -24,10 +24,10 @@ namespace AgarIO.Actions
 
             var command = new Commands.Move();
             command.Time = game.Time;
-            command.Movement = new List<Tuple<int, float, float>>();
+            command.Movement = new List<Tuple<int, float, float, float>>();
 
             List<PlayerPart> doneParts = new List<PlayerPart>();
-            
+
             state.CurrentPlayer.Parts.Sort((p1, p2) =>
             {
                 var d1 = Math.Sqrt((p1.X - X) * (p1.X - X) + (p1.Y - Y) * (p1.Y - Y));
@@ -48,7 +48,7 @@ namespace AgarIO.Actions
                     vX = part.EjectedVX;
                     vY = part.EjectedVY;
                 }
-                
+
 
                 // normalize
                 float size = (float)(Math.Sqrt(vX * vX + vY * vY));
@@ -56,7 +56,7 @@ namespace AgarIO.Actions
                     return;
                 vX /= size;
                 vY /= size;
-                
+
                 if (part.IsNewDividedPart)
                 {
                     part.IsNewDividedPart = false;
@@ -70,7 +70,7 @@ namespace AgarIO.Actions
 
                 if (part.MergeTime > 0)
                     part.MergeTime--;
-                
+
                 var nextX = part.X + vX * part.Speed;
                 var nextY = part.Y + vY * part.Speed;
 
@@ -118,7 +118,9 @@ namespace AgarIO.Actions
                             */
                         }
                     }
+
                 }
+
 
                 if (nextX > Game.MaxLocationX)
                     nextX = Game.MaxLocationX;
@@ -129,9 +131,20 @@ namespace AgarIO.Actions
                 if (nextY < 0)
                     nextY = 0;
 
+                // food eating prediction
+                var eatenFood = new HashSet<Food>();
+
+                foreach (var food in game.GameState.Food)
+                    if (CanBeEaten(food, nextX, nextY, part))
+                    {
+                        part.Mass += food.Mass;
+                        eatenFood.Add(food);
+                    }
+                game.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
+
 
                 doneParts.Add(part);
-                command.Movement.Add(new Tuple<int, float, float>(part.Identifier, nextX, nextY));
+                command.Movement.Add(new Tuple<int, float, float, float>(part.Identifier, nextX, nextY, part.Mass));
             }
 
             // apply prediction
@@ -165,6 +178,19 @@ namespace AgarIO.Actions
             if (res == true)
                 Console.WriteLine("");
             return res;
+        }
+
+        private bool CanBeEaten(Food food, float nextX, float nextY, PlayerPart part)
+        {
+            var dx = food.X - nextX;
+            var dy = food.Y - nextX;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+
+            if (distance < part.Radius - food.Radius &&    // is completely inside
+                part.Mass > 1.25 * food.Mass)
+                return true;
+
+            return false;
         }
 
     }

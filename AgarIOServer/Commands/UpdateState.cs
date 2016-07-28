@@ -12,9 +12,17 @@ namespace AgarIOServer.Commands
         [ProtoBuf.ProtoMember(1)]
         public GameState GameState { get; set; }
 
+        [ProtoBuf.ProtoMember(2)]
+        public GameStateChange GameStateChange { get; set; }
+
         public UpdateState(GameState state)
         {
             this.GameState = state;
+        }
+
+        public UpdateState(GameStateChange change)
+        {
+            this.GameStateChange = GameStateChange;
         }
 
         private UpdateState() { }
