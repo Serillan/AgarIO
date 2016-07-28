@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AgarIO.Entities;
+using System.Diagnostics;
 
 namespace AgarIO.Actions
 {
@@ -26,7 +27,7 @@ namespace AgarIO.Actions
             command.Movement = new List<Tuple<int, float, float>>();
 
             List<PlayerPart> doneParts = new List<PlayerPart>();
-
+            
             state.CurrentPlayer.Parts.Sort((p1, p2) =>
             {
                 var d1 = Math.Sqrt((p1.X - X) * (p1.X - X) + (p1.Y - Y) * (p1.Y - Y));
@@ -59,13 +60,16 @@ namespace AgarIO.Actions
                 if (part.IsNewDividedPart)
                 {
                     part.IsNewDividedPart = false;
-                    part.DivisionTime = PlayerPart.DefaulDivisionTime;
+                    part.DivisionTime = PlayerPart.DefaulDivisionTime - 1;
                 }
                 else
                 {
                     if (part.DivisionTime > 0)
                         part.DivisionTime--;
                 }
+
+                if (part.MergeTime > 0)
+                    part.MergeTime--;
                 
                 var nextX = part.X + vX * part.Speed;
                 var nextY = part.Y + vY * part.Speed;
@@ -79,7 +83,7 @@ namespace AgarIO.Actions
                 if (nextY < 0)
                     nextY = 0;
 
-                foreach (var p in state.CurrentPlayer.Parts)
+                foreach (var p in doneParts) // state.CurrentPlayer.Parts
                 {
                     if (p == part)
                         continue;
@@ -98,6 +102,8 @@ namespace AgarIO.Actions
                             var ny = dy / distance;
                             nextX -= (float)((p.Radius - distance + part.Radius) * nx);
                             nextY -= (float)((p.Radius - distance + part.Radius) * ny);
+
+                            Debug.WriteLine($"Normalizing {p.Identifier} because of collision with {part.Identifier}");
 
                             // possible movement inside many parts fix (not working)
                             /*
@@ -123,12 +129,17 @@ namespace AgarIO.Actions
                 if (nextY < 0)
                     nextY = 0;
 
-                // apply
-                part.X = nextX;
-                part.Y = nextY;
 
                 doneParts.Add(part);
                 command.Movement.Add(new Tuple<int, float, float>(part.Identifier, nextX, nextY));
+            }
+
+            // apply prediction
+            foreach (var partMove in command.Movement)
+            {
+                var part = game.GameState.CurrentPlayer.Parts.Find(p => p.Identifier == partMove.Item1);
+                part.X = partMove.Item2;
+                part.Y = partMove.Item3;
             }
 
             game.ServerConnection.SendAsync(command);
@@ -139,7 +150,7 @@ namespace AgarIO.Actions
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            var res = distance < 0.99999 * (part1.Radius + part2.Radius);
+            var res = distance <= 0.99999 * (part1.Radius + part2.Radius);
             if (res == true)
                 Console.WriteLine("");
             return res;

@@ -20,7 +20,7 @@ namespace AgarIOServer.Commands
 
             lock (player)
             { 
-                if (player.Parts.Count > 16)
+                if (player.Parts.Count >= 16)
                     return;
 
                 List<PlayerPart> newParts = new List<PlayerPart>();

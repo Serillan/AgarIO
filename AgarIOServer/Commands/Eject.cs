@@ -41,8 +41,8 @@ namespace AgarIOServer.Commands
 
                 var freeIdentifier = Enumerable.Range(0, 40).First(n => !player.Parts.Exists(p => p.Identifier == n));
 
-                nearestPart.Mass -= 50;
-                player.Parts.Add(new PlayerPart() {
+                player.Parts.Add(new PlayerPart()
+                {
                     Mass = 50,
                     DivisionTime = PlayerPart.DefaulDivisionTime,
                     IsBeingEjected = true,
@@ -52,8 +52,11 @@ namespace AgarIOServer.Commands
                     EjectedVX = this.X - nearestPart.X,
                     EjectedVY = this.Y - nearestPart.Y,
                     MergeTime = 100000,
-                    IsNewDividedPart = true
+                    IsNewDividedPart = true,
+                    OldRadius = nearestPart.Radius
                 });
+                nearestPart.Mass -= 50;
+
             }
             game.ConnectionManager.SendToClient(player.Name, new Invalidate("Ejection"));
         }

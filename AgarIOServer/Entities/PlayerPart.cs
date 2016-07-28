@@ -27,14 +27,17 @@ namespace AgarIOServer.Entities
         [ProtoBuf.ProtoMember(7)]
         public float EjectedVY { get; set; }
 
-
-
         [ProtoBuf.ProtoMember(5)]
         public int MergeTime { get; set; }
 
+        [ProtoBuf.ProtoMember(8)]
+        public float OldRadius { get; set; }
 
         [ProtoBuf.ProtoIgnore]
-        public const byte DefaulDivisionTime = 15;
+        public bool IsMerged { get; set; }
+
+        [ProtoBuf.ProtoIgnore]
+        public const byte DefaulDivisionTime = 10;
 
         [ProtoBuf.ProtoIgnore]
         public float Speed
@@ -42,8 +45,8 @@ namespace AgarIOServer.Entities
             get
             {
                 if (IsBeingEjected)
-                    return (40 + NthRoot(Mass, 1)) * GameServer.GameLoopInterval / 30f;
-                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 3) : 20 / NthRoot(Mass, 5))) * GameServer.GameLoopInterval / 30f;
+                    return (OldRadius * 4 / DefaulDivisionTime) * GameServer.GameLoopInterval / 30f;
+                return ((DivisionTime > 0 ? (this.Radius * 8 / DefaulDivisionTime) : 20 / NthRoot(Mass, 5))) * GameServer.GameLoopInterval / 30f;
             }
         }
 

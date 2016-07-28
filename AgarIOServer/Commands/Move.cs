@@ -117,7 +117,7 @@ namespace AgarIOServer.Commands
                         //Console.WriteLine("Entering player lock  " + playerName);
                         //Console.WriteLine("Entered player lock  " + playerName);
                         List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
-                        List<PlayerPart> partToBeMerged = new List<PlayerPart>();
+                        List<PlayerPart> partsToBeMerged = new List<PlayerPart>();
                         List<PlayerPart> ejectedPartsToBeRemoved = new List<PlayerPart>();
 
                         foreach (var part in player.Parts)
@@ -127,12 +127,14 @@ namespace AgarIOServer.Commands
 
                             part.X = movement.Item2;
                             part.Y = movement.Item3;
+
                             if (part.DivisionTime > 0)
                                 part.DivisionTime--;
                             if (part.MergeTime > 0)
                                 part.MergeTime--;
+
                             if (part.MergeTime == 0)
-                                partToBeMerged.Add(part);
+                                partsToBeMerged.Add(part);
                             part.IsNewDividedPart = false;
 
                             if (part.DivisionTime == 0 && part.IsBeingEjected)
@@ -154,14 +156,20 @@ namespace AgarIOServer.Commands
                         if (player.Parts.RemoveAll(p => ejectedPartsToBeRemoved.Contains(p)) > 0)
                             toBeInvalidated = true;
 
-                        foreach (var part in partToBeMerged)
+                        partsToBeMerged.ForEach(p => p.IsMerged = false );
+
+                        foreach (var part in partsToBeMerged)
                         {
-                            var mergingPart = partToBeMerged.Find(p => p != part && CanBeMerged(part, p));
+                            if (part.IsMerged)
+                                continue;
+
+                            var mergingPart = partsToBeMerged.Find(p => p != part && !p.IsMerged && CanBeMerged(part, p));
                             if (mergingPart != null) // merge
                             {
                                 part.Mass += mergingPart.Mass;
                                 part.MergeTime = (int)Math.Round((0.02 * part.Mass + 5) * 1000 / GameServer.GameLoopInterval);
                                 player.Parts.Remove(mergingPart);
+                                mergingPart.IsMerged = true;
                                 toBeInvalidated = true;
                             }
                         }
@@ -300,10 +308,17 @@ namespace AgarIOServer.Commands
             // 1. check whether such a movement can happen
             foreach (var part in player.Parts)
             {
+                // apply for check
+                part.DivisionTime--;
+                part.MergeTime--;
+
                 var movement = Movement.Find(t => t.Item1 == part.Identifier);
                 if (movement == null) // movement of certain part is missing
                 {
                     res = MovementCheckResult.OtherError;
+                    part.DivisionTime++;
+                    part.MergeTime++;
+                    Console.WriteLine("Missing movement of some part");
                     break;
                 }
 
@@ -316,20 +331,37 @@ namespace AgarIOServer.Commands
                 double distance = Math.Sqrt(dx * dx + dy * dy);
 
                 if (distance == 0 && !IsOnEdge(movement.Item2, movement.Item3))
-                    res = MovementCheckResult.OtherError;
+                {
+                    Console.WriteLine("edge error");
+                   // res = MovementCheckResult.OtherError;
+                }
 
                 distance = distance / deltaMovementTime; // distance per movement
                 if (player.FirstMovementTime == Time) // first movement - next test is bypassed
+                {
+                    part.DivisionTime++;
+                    part.MergeTime++;
                     continue;
+                }
 
                 if (distance > part.Speed * 1.01 && res == MovementCheckResult.OK &&  // *3 error rate allowed
                     !player.Parts.Exists(p => p != part && AreInCollision(p, part))) // when it is in collision, it can be moved faster!
                 {
-                    Console.WriteLine("Distance error, Distance : {0} | deltaMovementTime : {1}",
-                        distance, deltaMovementTime);
-                    res = MovementCheckResult.Overspeed;
+                    Console.WriteLine("Distance error, Distance : {0}, Max Allowed : {1} | deltaMovementTime : {2}",
+                       distance, part.Speed, deltaMovementTime);
+                    //res = MovementCheckResult.Overspeed;
                 }
+
+                // rollback
+                part.MergeTime++;
+                part.DivisionTime++;
             }
+            if (res == MovementCheckResult.Overspeed)
+                Console.WriteLine("Ended with overspeed");
+            else if (res == MovementCheckResult.InvalidLocation)
+                Console.WriteLine("Invalid location");
+            else if (res == MovementCheckResult.OtherError)
+                Console.WriteLine("other error");
 
             return res;
         }
@@ -346,7 +378,7 @@ namespace AgarIOServer.Commands
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            return distance < part1.Radius + part2.Radius;
+            return distance <= 0.9999 * (part1.Radius + part2.Radius);
         }
 
         private Food GenerateNewFood()
@@ -362,11 +394,11 @@ namespace AgarIOServer.Commands
             lock (server.GameState.Viruses)
             {
                 var newParts = new List<PlayerPart>();
+                var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
+                var i = 0;
 
                 foreach (var part in player.Parts)
                 {
-                    var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
-                    var i = 0;
                     Virus virus;
 
                     if (player.Parts.Count < 16 && server.GameState.Viruses.Exists(v => CanBeDividedByVirus(v, part)))
@@ -386,9 +418,9 @@ namespace AgarIOServer.Commands
 
                         newParts.Add(new PlayerPart()
                         {
-                            DivisionTime = PlayerPart.DefaulDivisionTime,
+                            DivisionTime = 0,
                             Identifier = (byte)freeIdentifiers[i++],
-                            IsNewDividedPart = true,
+                            IsNewDividedPart = false,
                             Mass = part.Mass / 2,
                             X = part.X,
                             Y = part.Y,

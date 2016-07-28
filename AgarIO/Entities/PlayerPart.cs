@@ -28,6 +28,9 @@ namespace AgarIO.Entities
         [ProtoBuf.ProtoMember(7)]
         public float EjectedVY { get; set; }
 
+        [ProtoBuf.ProtoMember(8)]
+        public float OldRadius { get; set; }
+
         [ProtoBuf.ProtoIgnore]
         public const byte DefaulDivisionTime = 10;
 
@@ -40,8 +43,8 @@ namespace AgarIO.Entities
             get
             {
                 if (IsBeingEjected)
-                    return (40 + NthRoot(Mass, 1)) * Game.GameLoopInterval / 30f;
-                return ((DivisionTime > 0 ? 30 + NthRoot(Mass, 3) : 20 / NthRoot(Mass, 5))) * Game.GameLoopInterval / 30f;
+                    return (OldRadius * 4 / DefaulDivisionTime) * Game.GameLoopInterval / 30f;
+                return (DivisionTime > 0 ? (this.Radius * 8 / DefaulDivisionTime) : 20 / NthRoot(Mass, 5)) * Game.GameLoopInterval / 30f;
             }
         }
 
