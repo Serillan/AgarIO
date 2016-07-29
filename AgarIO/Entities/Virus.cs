@@ -7,6 +7,10 @@ using System.Diagnostics;
 
 namespace AgarIO.Entities
 {
+    /// <summary>
+    /// Represents the virus entity.
+    /// </summary>
+    /// <seealso cref="AgarIO.Entities.Entity" />
     [ProtoBuf.ProtoContract]
     class Virus : Entity
     {

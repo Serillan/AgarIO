@@ -12,14 +12,39 @@ using System.Drawing.Drawing2D;
 
 namespace AgarIO
 {
+    /// <summary>
+    /// Graphic Engine class used for rendering the game.
+    /// </summary>
     class GraphicsEngine
     {
+        /// <summary>
+        /// Gets or sets the game form.
+        /// </summary>
         GameForm GameForm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the game panel on which the game is drawn.
+        /// </summary>
+        /// <value>The game panel.</value>
         static GamePanel GamePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the matrix pen with which the matrix is drawn.
+        /// </summary>
+        /// <value>The matrix pen.</value>
         Pen MatrixPen { get; set; }
 
-        GameState StateCopy { get; set; }
+        /// <summary>
+        /// Gets or sets the game state copy. This state is rendered.
+        /// We have game state copy because it is thread safe.
+        /// </summary>
+        /// <value>The game state copy.</value>
+        GameState GameStateCopy { get; set; }
 
+        /// <summary>
+        /// Gets the width of the game panel.
+        /// </summary>
+        /// <value>The width of the game panel.</value>
         static public int GamePanelWidth
         {
             get
@@ -28,6 +53,10 @@ namespace AgarIO
             }
         }
 
+        /// <summary>
+        /// Gets the height of the game panel.
+        /// </summary>
+        /// <value>The height of the game panel.</value>
         static public int GamePanelHeight
         {
             get
@@ -36,6 +65,10 @@ namespace AgarIO
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GraphicsEngine"/> class.
+        /// </summary>
+        /// <param name="gameForm">The game form.</param>
         public GraphicsEngine(GameForm gameForm)
         {
             GameForm = gameForm;
@@ -45,16 +78,25 @@ namespace AgarIO
             GamePanel.Paint += GamePanel_Paint;
         }
 
+        /// <summary>
+        /// Handles the Paint event of the GamePanel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PaintEventArgs"/> instance containing the event data.</param>
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            if (StateCopy == null)
+            if (GameStateCopy == null)
                 return;
             DrawGame(e.Graphics);
         }
 
+        /// <summary>
+        /// Draws the game.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawGame(Graphics g)
         {
-            if (StateCopy == null || StateCopy.CurrentPlayer == null)
+            if (GameStateCopy == null || GameStateCopy.CurrentPlayer == null)
                 return;
             g.Clear(Color.Black);
             TransformScene(g);
@@ -65,19 +107,27 @@ namespace AgarIO
             DrawScoreTable(g);
         }
 
+        /// <summary>
+        /// Transforms the scene.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void TransformScene(Graphics g)
         {
-            float q = (float)((0.1 * GamePanel.Width) / StateCopy.CurrentPlayer.Radius);
+            float q = (float)((0.1 * GamePanel.Width) / GameStateCopy.CurrentPlayer.Radius);
             // opposite order!
             g.TranslateTransform(GamePanel.Width / 2.0f, GamePanel.Height / 2.0f);
             if (q < 1) // don't scale until it reaches max view radius (_k_ * GamePanel.Width)
                 g.ScaleTransform(q, q);
-            g.TranslateTransform(-StateCopy.CurrentPlayer.X, -StateCopy.CurrentPlayer.Y); // will be applied 1.
+            g.TranslateTransform(-GameStateCopy.CurrentPlayer.X, -GameStateCopy.CurrentPlayer.Y); // will be applied 1.
         }
 
+        /// <summary>
+        /// Draws the players.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawPlayers(Graphics g)
         {
-            var playerPartsWithColorAndName = from player in StateCopy.Players select new { player.Color, player.Parts, PlayerName = player.Name };
+            var playerPartsWithColorAndName = from player in GameStateCopy.Players select new { player.Color, player.Parts, PlayerName = player.Name };
 
             var partsWithColorAndName = (
                         from partWithColorAndName in playerPartsWithColorAndName
@@ -109,6 +159,10 @@ namespace AgarIO
             }
         }
 
+        /// <summary>
+        /// Draws the matrix.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawMatrix(Graphics g)
         {
             for (int x = 0; x <= Game.MaxLocationX; x += 120)
@@ -118,12 +172,16 @@ namespace AgarIO
                 g.DrawLine(MatrixPen, 0, y, Game.MaxLocationX, y);
         }
 
+        /// <summary>
+        /// Draws the food.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawFood(Graphics g)
         {
-            if (StateCopy.Food == null)
+            if (GameStateCopy.Food == null)
                 return;
 
-            foreach (var food in StateCopy.Food)
+            foreach (var food in GameStateCopy.Food)
             {
                 var brush = new SolidBrush(Color.FromArgb(food.Color[0], food.Color[1], food.Color[2]));
                 g.FillEllipse(brush, food.X - food.Radius,
@@ -132,11 +190,15 @@ namespace AgarIO
 
         }
 
+        /// <summary>
+        /// Draws the viruses.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawViruses(Graphics g)
         {
-            if (StateCopy.Viruses == null)
+            if (GameStateCopy.Viruses == null)
                 return;
-            foreach (var virus in StateCopy.Viruses)
+            foreach (var virus in GameStateCopy.Viruses)
             {
                 Brush brush = new HatchBrush(HatchStyle.ZigZag, Color.DarkGreen);
                 //g.FillEllipse(Brushes.DarkGoldenrod, part.X - r,
@@ -151,13 +213,17 @@ namespace AgarIO
             }
         }
 
+        /// <summary>
+        /// Draws the score table.
+        /// </summary>
+        /// <param name="g">The graphics object used for drawing.</param>
         private void DrawScoreTable(Graphics g)
         {
-            if (StateCopy?.Players == null)
+            if (GameStateCopy?.Players == null)
                 return;
 
             StringBuilder scoreText = new StringBuilder();
-            var sortedPlayers = (from player in StateCopy.Players
+            var sortedPlayers = (from player in GameStateCopy.Players
                                  orderby player.Mass descending
                                  select player).ToList();
 
@@ -167,11 +233,17 @@ namespace AgarIO
             GameForm.ScoreLabel.Text = "Leaderboard" + scoreText.ToString();
         }
 
+        /// <summary>
+        /// Starts the graphics.
+        /// </summary>
         public void StartGraphics()
         {
             GameForm.Show();
         }
 
+        /// <summary>
+        /// Stops the graphics.
+        /// </summary>
         public void StopGraphics()
         {
             GameForm.BeginInvoke(new Action(() =>
@@ -180,9 +252,13 @@ namespace AgarIO
             }));
         }
 
+        /// <summary>
+        /// Renders the specified state.
+        /// </summary>
+        /// <param name="state">The state.</param>
         public void Render(GameState state)
         {
-            this.StateCopy = state;
+            this.GameStateCopy = state;
             GamePanel.Invalidate();
         }
     }

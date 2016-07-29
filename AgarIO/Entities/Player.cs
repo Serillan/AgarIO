@@ -6,21 +6,37 @@ using System.Threading.Tasks;
 
 namespace AgarIO.Entities
 {
+    /// <summary>
+    /// Represents the Player entity.
+    /// </summary>
+    /// <seealso cref="AgarIO.Entities.Entity" />
     [ProtoBuf.ProtoContract]
     class Player : Entity
     {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
         [ProtoBuf.ProtoMember(1)]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the parts of the player.
+        /// </summary>
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color of the player parts.
+        /// </summary>
+        /// <value>The color.</value>
         [ProtoBuf.ProtoMember(3)]
         public byte[] Color { get; set; }
 
-        [ProtoBuf.ProtoIgnore]
-        public long LastMovementTime { get; set; }
-
+        /// <summary>
+        /// Gets or sets the x coordinate.
+        /// </summary>
+        /// <value>The x.</value>
         [ProtoBuf.ProtoIgnore]
         new public float X
         {
@@ -32,6 +48,11 @@ namespace AgarIO.Entities
                 return x / Parts.Where(p => !p.IsBeingEjected).Count();
             }
         }
+    
+        /// <summary>
+        /// Gets or sets the y coordinate.
+        /// </summary>
+        /// <value>The y.</value>
         [ProtoBuf.ProtoIgnore]
         new public float Y
         {
@@ -43,6 +64,12 @@ namespace AgarIO.Entities
                 return y / Parts.Where(p => !p.IsBeingEjected).Count();
             }
         }
+        
+        /// <summary>
+        /// Gets the mass of the player.
+        /// It is equal to the sum of the masses of player's parts.
+        /// </summary>
+        /// <value>The mass.</value>
         [ProtoBuf.ProtoIgnore]
         new public int Mass
         {
@@ -55,6 +82,10 @@ namespace AgarIO.Entities
             }
         }
 
+        /// <summary>
+        /// Gets the radius.
+        /// </summary>
+        /// <value>The radius.</value>
         [ProtoBuf.ProtoIgnore]
         new public float Radius
         {

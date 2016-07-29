@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AgarIO")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("DarkAgar")]
+[assembly: AssemblyDescription("Agar.IO game remake")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AgarIO")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyProduct("DarkAgar")]
+[assembly: AssemblyCopyright("Copyright Juraj Eduard Pall ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

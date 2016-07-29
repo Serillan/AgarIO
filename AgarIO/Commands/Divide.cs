@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace AgarIO.Commands
 {
+    /// <summary>
+    /// Represents the division command.
+    /// </summary>
+    /// <seealso cref="AgarIO.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {
-        public override void Process(Game game)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

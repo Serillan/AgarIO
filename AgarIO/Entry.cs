@@ -7,6 +7,9 @@ using AgarIO.Forms;
 
 namespace AgarIO
 {
+    /// <summary>
+    /// The class that contains the entry point of the application.
+    /// </summary>
     static class Entry
     {
         /// <summary>

@@ -8,6 +8,9 @@ using ProtoBuf;
 namespace AgarIO.Commands
 {
 
+    /// <summary>
+    /// Represents the command that is send between a client and the server.
+    /// </summary>
     [ProtoContract]
     [ProtoInclude(1, typeof(Divide))]
     [ProtoInclude(2, typeof(Invalidate))]
@@ -17,6 +20,10 @@ namespace AgarIO.Commands
     [ProtoInclude(6, typeof(Eject))]
     abstract class Command
     {
+        /// <summary>
+        /// Processes the command received from the server.
+        /// </summary>
+        /// <param name="game">The Game in which the command takes place.</param>
         public virtual void Process(Game game) { }
     }
 

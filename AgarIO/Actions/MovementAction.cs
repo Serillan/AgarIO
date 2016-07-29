@@ -9,12 +9,25 @@ using System.Diagnostics;
 
 namespace AgarIO.Actions
 {
+    /// <summary>
+    /// Represents the movement action.
+    /// </summary>
+    /// <seealso cref="AgarIO.Actions.Action" />
     class MovementAction : Action
     {
+        /// <summary>
+        /// Creates new player action.
+        /// </summary>
+        /// <param name="MousePosition">Mouse position that will be used for the action.</param>
         public MovementAction(Point MousePosition) : base(MousePosition)
         {
         }
 
+        /// <summary>
+        /// Processes player action. It will create appropriate command and
+        /// send to the server and also updates predictions.
+        /// </summary>
+        /// <param name="game">Game in which the player action takes place.</param>
         public override void Process(Game game)
         {
             var state = game.GameState;
@@ -37,8 +50,6 @@ namespace AgarIO.Actions
 
             foreach (var part in state.CurrentPlayer.Parts)
             {
-                //float vX = (float)(X - GraphicsEngine.GamePanelWidth / 2);
-                //float vY = (float)(Y - GraphicsEngine.GamePanelHeight / 2);
 
                 float vX = X - part.X;
                 float vY = Y - part.Y;
@@ -48,7 +59,6 @@ namespace AgarIO.Actions
                     vX = part.EjectedVX;
                     vY = part.EjectedVY;
                 }
-
 
                 // normalize
                 float size = (float)(Math.Sqrt(vX * vX + vY * vY));
@@ -60,7 +70,7 @@ namespace AgarIO.Actions
                 if (part.IsNewDividedPart)
                 {
                     part.IsNewDividedPart = false;
-                    part.DivisionTime = PlayerPart.DefaulDivisionTime - 1;
+                    part.DivisionTime = PlayerPart.DefaultDivisionTime - 1;
                 }
                 else
                 {
@@ -83,7 +93,7 @@ namespace AgarIO.Actions
                 if (nextY < 0)
                     nextY = 0;
 
-                foreach (var p in doneParts) // state.CurrentPlayer.Parts
+                foreach (var p in doneParts) // or state.CurrentPlayer.Parts
                 {
                     if (p == part)
                         continue;
@@ -103,24 +113,11 @@ namespace AgarIO.Actions
                             nextX -= (float)((p.Radius - distance + part.Radius) * nx);
                             nextY -= (float)((p.Radius - distance + part.Radius) * ny);
 
-                            Debug.WriteLine($"Normalizing {p.Identifier} because of collision with {part.Identifier}");
-
-                            // possible movement inside many parts fix (not working)
-                            /*
-                            if (doneParts.Exists(p2 =>     // if there is still collision
-                            p2 != part && AreInCollision(nextX, nextY, part.Radius, p2) && (part.MergeTime > 0 || p2.MergeTime > 0) &&
-                            part.DivisionTime == 0 && p2.DivisionTime == 0))
-                            {
-                                // then no movement is applied
-                                nextX = part.X;
-                                nextY = part.Y;
-                            }
-                            */
+                            //Debug.WriteLine($"Normalizing {p.Identifier} because of collision with {part.Identifier}");
                         }
                     }
 
                 }
-
 
                 if (nextX > Game.MaxLocationX)
                     nextX = Game.MaxLocationX;
@@ -144,7 +141,6 @@ namespace AgarIO.Actions
                     }
                 game.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
 
-
                 doneParts.Add(part);
                 command.Movement.Add(new Tuple<int, float, float, float>(part.Identifier, nextX, nextY, part.Mass));
             }
@@ -160,39 +156,56 @@ namespace AgarIO.Actions
             game.ServerConnection.SendAsync(command);
         }
 
+        /// <summary>
+        /// Return true if <paramref name="part1"/> is in collision with <paramref name="part2"/>.
+        /// </summary>
+        /// <param name="part1">The part1.</param>
+        /// <param name="part2">The part2.</param>
+        /// <returns><c>true</c> if <paramref name="part1"/> is in collision with <paramref name="part2"/>, <c>false</c> otherwise.</returns>
         private bool AreInCollision(PlayerPart part1, PlayerPart part2)
         {
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            var res = distance <= 0.99999 * (part1.Radius + part2.Radius);
-            if (res == true)
-                Console.WriteLine("");
-            return res;
+            return distance <= 0.99999 * (part1.Radius + part2.Radius);
         }
 
+        /// <summary>
+        /// Return true if the part with coordinates (<paramref name="x1"/>, <paramref name="x2"/>)
+        /// and radius <paramref name="radius1"/> is in collision with <paramref name="part2"/>.
+        /// </summary>
+        /// <param name="x1">The x coordinate of the first part.</param>
+        /// <param name="y1">The y coordinate of the first part.</param>
+        /// <param name="radius1">The radius of the first part.</param>
+        /// <param name="part2">Second part.</param>
+        /// <returns><c>true</c> if the part with coordinates (<paramref name="x1"/>, <paramref name="x2"/>)
+        /// and radius <paramref name="radius1"/> is in collision with <paramref name="part2"/>, <c>false</c> otherwise.</returns>
         private bool AreInCollision(float x1, float y1, float radius1, PlayerPart part2)
         {
             var dx = part2.X - x1;
             var dy = part2.Y - y1;
             var distance = Math.Sqrt(dx * dx + dy * dy);
-            var res = distance <= 0.99999 * (radius1 + part2.Radius);
-            if (res == true)
-                Console.WriteLine("");
-            return res;
+            return distance <= 0.99999 * (radius1 + part2.Radius);
         }
 
+        /// <summary>
+        /// Determines whether <paramref name="food"/> can be eaten by <paramref name="part"/>
+        /// when the part is on the position (<paramref name="nextX"/>, <paramref name="nextY"/>).
+        /// </summary>
+        /// <param name="food">The food.</param>
+        /// <param name="nextX">The next x.</param>
+        /// <param name="nextY">The next y.</param>
+        /// <param name="part">The part.</param>
+        /// <returns><c>true</c> if  <paramref name="food"/> can be eaten by <paramref name="part"/>
+        /// when the part is on the position (<paramref name="nextX"/>, <paramref name="nextY"/>).; otherwise, <c>false</c>.</returns>
         private bool CanBeEaten(Food food, float nextX, float nextY, PlayerPart part)
         {
             var dx = food.X - nextX;
             var dy = food.Y - nextY;
             var distance = Math.Sqrt(dx * dx + dy * dy);
 
-            if (distance < part.Radius - food.Radius &&    // is completely inside
-                part.Mass > 1.25 * food.Mass)
-                return true;
-
-            return false;
+            return (distance < part.Radius - food.Radius &&    // is completely inside
+                part.Mass > 1.25 * food.Mass);
         }
 
     }

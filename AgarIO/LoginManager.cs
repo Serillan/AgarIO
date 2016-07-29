@@ -9,11 +9,26 @@ using System.Diagnostics;
 
 namespace AgarIO
 {
+    /// <summary>
+    /// The Login Manager class responsible for controlling the login to the game.
+    /// </summary>
     class LoginManager
     {
+        /// <summary>
+        /// Gets or sets the login form.
+        /// </summary>
+        /// <value>The login form.</value>
         LoginForm LoginForm { get; set; }
-        IPAddress ServerAdress;
 
+        /// <summary>
+        /// The server address
+        /// </summary>
+        IPAddress ServerAddress;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginManager"/> class.
+        /// </summary>
+        /// <param name="loginForm">The login form.</param>
         public LoginManager(LoginForm loginForm)
         {
             this.LoginForm = loginForm;
@@ -23,7 +38,7 @@ namespace AgarIO
         /// Method that will try to start the game.
         /// Should be called from the UI thread.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The task.</returns>
         public async Task StartGameAsync()
         {
             ServerConnection connection;
@@ -31,13 +46,13 @@ namespace AgarIO
             switch (LoginForm.ServerListBox.SelectedIndex)
             {
                 case 0:
-                    ServerAdress = IPAddress.Loopback;
+                    ServerAddress = IPAddress.Loopback;
                     break;
                 case 1:
-                    ServerAdress = Dns.GetHostAddresses("gameserver.northeurope.cloudapp.azure.com")[0];
+                    ServerAddress = Dns.GetHostAddresses("gameserver.northeurope.cloudapp.azure.com")[0];
                     break;
                 case 2:
-                    if (!IPAddress.TryParse(LoginForm.IPAdressTextBox.Text, out ServerAdress))
+                    if (!IPAddress.TryParse(LoginForm.IPAdressTextBox.Text, out ServerAddress))
                     {
                         LoginForm.InfoLabel.Text = "Invalid IP Adress";
                         return;
@@ -47,7 +62,7 @@ namespace AgarIO
 
             try
             {
-                connection = await ServerConnection.ConnectAsync(ServerAdress, playerName);
+                connection = await ServerConnection.ConnectAsync(ServerAddress, playerName);
                 //connection = await ServerConnection.ConnectAsync(IPAddress.Loopback, playerName);
                 //connection = await ServerConnection.ConnectAsync(Dns.GetHostAddresses("gameserver.northeurope.cloudapp.azure.com")[0], playerName);
                 //connection = await ServerConnection.ConnectAsync(IPAddress.Parse("178.40.89.228"), playerName);
@@ -71,16 +86,20 @@ namespace AgarIO
             GraphicsEngine graphicsEngine = new GraphicsEngine(gameForm);
             InputManager inputManager = new InputManager(gameForm, game);
 
-            game.Init(this, graphicsEngine, inputManager, connection, playerName);
+            game.Initialize(this, graphicsEngine, inputManager, connection, playerName);
             game.Start();
             LoginForm.Visible = false;
         }
 
-        public void Show(string closingMsg)
+        /// <summary>
+        /// Shows the message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public void ShowMessage(string message)
         {
             LoginForm.BeginInvoke(new Action(() =>
             {
-                LoginForm.InfoLabel.Text = closingMsg;
+                LoginForm.InfoLabel.Text = message;
                 LoginForm.Visible = true;
             }));
         }

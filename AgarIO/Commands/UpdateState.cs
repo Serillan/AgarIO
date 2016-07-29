@@ -7,22 +7,29 @@ using System.Threading.Tasks;
 
 namespace AgarIO.Commands
 {
+    /// <summary>
+    /// Represents the update of the state command.
+    /// </summary>
+    /// <seealso cref="AgarIO.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class UpdateState : Command
     {
+        /// <summary>
+        /// A New GameState for the client.
+        /// </summary>
+        /// <value>The state of the game.</value>
         [ProtoBuf.ProtoMember(1)]
         public GameState GameState { get; set; }
-
-        public UpdateState(GameState state)
-        {
-            this.GameState = state;
-        }
 
         /// <summary>
         /// Used for deserialization.
         /// </summary>
         private UpdateState() { }
 
+        /// <summary>
+        /// Processes the command received from the server.
+        /// </summary>
+        /// <param name="game">The Game in which the command takes place.</param>
         public override void Process(Game game)
         {
             var oldGameState = game.GameState;

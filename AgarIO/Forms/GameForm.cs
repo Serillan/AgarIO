@@ -41,7 +41,7 @@ namespace AgarIO.Forms
             //this.DoubleBuffered = true;
            // SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint |
             //   ControlStyles.UserPaint, true);
-            // Enable double duffering to stop flickering.
+            // Enable double buffering to stop flickering.
             //if (!this.IsHandleCreated)
             //{
              //   this.CreateHandle();
