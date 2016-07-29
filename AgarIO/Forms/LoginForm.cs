@@ -20,6 +20,7 @@ namespace AgarIO.Forms
         {
             InitializeComponent();
             manager = new LoginManager(this);
+            ServerListBox.SelectedIndex = 0;
         }
 
         private void LoginButton_Click(object sender, EventArgs e)
@@ -27,5 +28,12 @@ namespace AgarIO.Forms
             InfoLabel.Text = "Logging in ...";
             manager.StartGameAsync();
         }
+
+        private void IPAdressTextBox_MouseClick(object sender, MouseEventArgs e)
+        {
+            ServerListBox.ClearSelected();
+            ServerListBox.SetSelected(2, true);
+        }
+
     }
 }

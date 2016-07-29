@@ -30,7 +30,10 @@ namespace AgarIO
         [ProtoBuf.ProtoIgnore]
         public List<Food> EatenFoodPrediction { get; set; }
 
-
+        public GameState Clone()
+        {
+            return (GameState)MemberwiseClone();
+        }
 
     }
 }

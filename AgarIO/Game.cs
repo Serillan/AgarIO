@@ -13,14 +13,14 @@ using AgarIO.Entities;
 using AgarIO.Actions;
 using AgarIO.Commands;
 using System.Timers;
-
+using System.Threading;
 
 namespace AgarIO
 {
     class Game
     {
         public ServerConnection ServerConnection { get; set; }
-        public long Time { get; set; }
+        public long Time;
         public GameState GameState { get; set; }
         public bool IsPredictionValid { get; set; }
         public string PlayerName { get; set; }
@@ -38,7 +38,7 @@ namespace AgarIO
         /// </summary>
         public bool IsRunning { get; private set; }
 
-        public void Init(LoginManager loginManager, GraphicsEngine graphicsEngine, 
+        public void Init(LoginManager loginManager, GraphicsEngine graphicsEngine,
             InputManager inputManager, ServerConnection connection, string playerName)
         {
             this.LoginManager = loginManager;
@@ -75,12 +75,17 @@ namespace AgarIO
                 delta = 1000 * (b - a) / Stopwatch.Frequency;
                 if (delta >= GameLoopInterval)
                 {
-                    if (GameState != null)
+                    if (GameState?.CurrentPlayer != null)
                     {
                         lock (this)
                         {
-                            Time++;
-                            new MovementAction(InputManager.MousePosition).Process(this);
+                            Interlocked.Add(ref Time, 1);
+
+                            lock (GameState.CurrentPlayer) // parts prediction is mutable
+                            {
+                                new MovementAction(InputManager.MousePosition).Process(this);
+                            }
+
 
                             if (InputManager.DivisionRequested)
                             {
@@ -94,7 +99,22 @@ namespace AgarIO
                                 InputManager.EjectionRequested = false;
                             }
 
-                            GraphicsEngine.Render(GameState);
+                            GameState gameStateForRendering = GameState.Clone();
+
+                            // deep clone of prediction
+
+                            var currentPlayerPartsCopy = new List<PlayerPart>();
+                            foreach (var part in GameState.CurrentPlayer.Parts)
+                                currentPlayerPartsCopy.Add(part.Clone());
+
+                            var foodCopy = new List<Food>();
+                            foreach (var food in GameState.Food)
+                                foodCopy.Add(food);
+
+                            gameStateForRendering.CurrentPlayer.Parts = currentPlayerPartsCopy;
+                            gameStateForRendering.Food = foodCopy;
+
+                            GraphicsEngine.Render(gameStateForRendering);
                         }
                     }
                     a = Stopwatch.GetTimestamp();
@@ -114,13 +134,14 @@ namespace AgarIO
         {
             IsRunning = false;
             //GameTimer.Stop();
-            ServerConnection.SendAsync(new Stop(msg)).ContinueWith(new Action<Task>(t => {
+            ServerConnection.SendAsync(new Stop(msg)).ContinueWith(new Action<Task>(t =>
+            {
                 ServerConnection.Dispose();
                 Debug.WriteLine("stopped");
             }));
 
             GraphicsEngine.StopGraphics();
-            LoginManager.Show(msg); 
+            LoginManager.Show(msg);
         }
     }
 }

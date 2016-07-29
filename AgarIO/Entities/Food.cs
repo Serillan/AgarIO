@@ -20,5 +20,10 @@ namespace AgarIO.Entities
                 return true;
             return false;
         }
+
+        public Food Clone()
+        {
+            return (Food)MemberwiseClone();
+        }
     }
 }

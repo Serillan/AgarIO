@@ -41,7 +41,7 @@ namespace AgarIO
             {
                 await conn.SendAsync(String.Format("CONNECT {0}", playerName)); // TODO - name with whitespace
 
-                if (await Task.WhenAny(task, Task.Delay(100000)) == task)
+                if (await Task.WhenAny(task, Task.Delay(1000)) == task)
                 {
                     res = task.Result;
                     if (res.Split()[0] == "CONNECTED")

@@ -52,5 +52,10 @@ namespace AgarIO.Entities
         {
             return (float)(Math.Pow(A, 1.0 / N));
         }
+
+        public PlayerPart Clone()
+        {
+            return (PlayerPart)MemberwiseClone();
+        }
     }
 }
