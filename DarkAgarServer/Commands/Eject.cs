@@ -25,7 +25,6 @@ namespace DarkAgarServer.Commands
         /// Gets or sets the y value (in game coordinates) of the position to which the part should be ejected.
         /// </summary>
         /// <value>The y.</value>
-        /// TODO Edit XML Comment Template for Y
         [ProtoBuf.ProtoMember(2)]
         public float Y { get; set; }
 

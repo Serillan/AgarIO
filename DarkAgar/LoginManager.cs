@@ -54,7 +54,7 @@ namespace DarkAgar
                 case 2:
                     if (!IPAddress.TryParse(LoginForm.IPAddressTextBox.Text, out ServerAddress))
                     {
-                        LoginForm.InfoLabel.Text = "Invalid IP Adress";
+                        LoginForm.InfoLabel.Text = "Invalid IP Address";
                         return;
                     }
                     break;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DarkAgar.Entities
+namespace DarkAgarServer.Entities
 {
     /// <summary>
     /// Represents the game entity.
@@ -22,7 +22,7 @@ namespace DarkAgar.Entities
         /// <value>The mass.</value>
         [ProtoBuf.ProtoMember(1)]
         public int Mass { get; set; }
-       
+
         /// <summary>
         /// Gets the radius.
         /// </summary>
@@ -33,17 +33,17 @@ namespace DarkAgar.Entities
             get
             {
                 //return (20 + NthRoot(Mass, 5));
-                return 10 * (float) Math.Sqrt(Mass / Math.PI);
+                return 10 * (float)Math.Sqrt(Mass / Math.PI);
             }
         }
-       
+
         /// <summary>
         /// Gets or sets the x coordinate.
         /// </summary>
         /// <value>The x.</value>
         [ProtoBuf.ProtoMember(3)]
         public float X { get; set; }
-       
+
         /// <summary>
         /// Gets or sets the y coordinate.
         /// </summary>
@@ -57,7 +57,6 @@ namespace DarkAgar.Entities
         /// <param name="number">a.</param>
         /// <param name="n">The n.</param>
         /// <returns>The <paramref name="n"/>-th root of the <paramref name="number"/>.</returns>
-        /// TODO Edit XML Comment Template for NthRoot
         private float NthRoot(float number, int n)
         {
             return (float)(Math.Pow(number, 1.0 / n));

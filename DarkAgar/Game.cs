@@ -113,7 +113,7 @@ namespace DarkAgar
         }
 
         /// <summary>
-        /// Starts the loop.
+        /// Starts the game loop.
         /// </summary>
         /// <returns>Task.</returns>
         private async Task StartLoop()
@@ -184,7 +184,6 @@ namespace DarkAgar
         /// Closes the game.
         /// </summary>
         /// <param name="closingMessage">The closing message.</param>
-        /// TODO Edit XML Comment Template for Close
         public void Close(string closingMessage)
         {
             IsRunning = false;

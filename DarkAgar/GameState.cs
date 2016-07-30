@@ -8,7 +8,6 @@ using System.Drawing;
 
 namespace DarkAgar
 {
-
     /// <summary>
     /// Represents the game state.
     /// </summary>

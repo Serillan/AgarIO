@@ -68,7 +68,6 @@ namespace DarkAgarServer.Entities
         /// Gets or sets the x coordinate.
         /// </summary>
         /// <value>The x.</value>
-        /// TODO Edit XML Comment Template for X
         [ProtoBuf.ProtoIgnore]
         new public float X
         {

@@ -56,7 +56,7 @@ namespace DarkAgar
 
             for (int i = 0; i < 5; i++)
             {
-                await conn.SendAsync(String.Format("CONNECT {0}", playerName)); // TODO - name with whitespace
+                await conn.SendAsync(String.Format("CONNECT {0}", playerName));
 
                 if (await Task.WhenAny(task, Task.Delay(1000)) == task)
                 {
@@ -64,7 +64,7 @@ namespace DarkAgar
                     if (res.Split()[0] == "CONNECTED")
                     {
                         conn.UdpServer.Connect(address, int.Parse(res.Split()[1]));
-                        for (int j = 0; j < 3; j++)  // TODO 3 should be there
+                        for (int j = 0; j < 3; j++)
                             conn.SendAsync("ACK");
                         return conn;
                     }

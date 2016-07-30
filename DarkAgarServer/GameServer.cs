@@ -154,7 +154,6 @@ namespace DarkAgarServer
         /// Adds the new player.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        /// TODO Edit XML Comment Template for AddNewPlayer
         private void AddNewPlayer(string playerName)
         {
             Player newPlayer = new Player(playerName, GameState);
