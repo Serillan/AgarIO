@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ProtoBuf;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
 
     /// <summary>

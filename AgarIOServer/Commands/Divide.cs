@@ -3,19 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIOServer.Entities;
+using DarkAgarServer.Entities;
 
-namespace AgarIOServer.Commands
+namespace DarkAgarServer.Commands
 {
+    /// <summary>
+    /// Represents the division command.
+    /// </summary>
+    /// <seealso cref="DarkAgarServer.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {
-        public override void Process(GameServer game, string playerName)
+
+        /// <summary>
+        /// Processes the command received from the client.
+        /// </summary>
+        /// <param name="gameServer">The Game Server in which the command takes place.</param>
+        /// <param name="playerName">Name of the player.</param>
+        public override void Process(GameServer gameServer, string playerName)
         {
             Player player = null;
-            lock (game.GameState.Players)
+            lock (gameServer.GameState.Players)
             {
-                player = game.GameState.Players.Find(p => p.Name == playerName);
+                player = gameServer.GameState.Players.Find(p => p.Name == playerName);
             }
 
             lock (player)
@@ -44,7 +54,7 @@ namespace AgarIOServer.Commands
 
                         newParts.Add(new PlayerPart()
                         {
-                            DivisionTime = PlayerPart.DefaulDivisionTime,
+                            DivisionTime = PlayerPart.DefaultDivisionTime,
                             Identifier = (byte)freeIdentifiers[i++],
                             IsNewDividedPart = true,
                             Mass = part.Mass / 2,
@@ -60,7 +70,7 @@ namespace AgarIOServer.Commands
                 if (player.Parts.Count != newParts.Count)
                 {
                     player.Parts = newParts;
-                    game.ConnectionManager.SendToClient(playerName, new Invalidate("Division"));
+                    gameServer.ConnectionManager.SendToClient(playerName, new Invalidate("Division"));
                 }
             }
         }

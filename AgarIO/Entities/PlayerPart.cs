@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Entities
+namespace DarkAgar.Entities
 {
     /// <summary>
     /// Represents player part entity.
     /// </summary>
-    /// <seealso cref="AgarIO.Entities.Entity" />
+    /// <seealso cref="DarkAgar.Entities.Entity" />
     [ProtoBuf.ProtoContract]
     class PlayerPart : Entity
     {
-
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
@@ -66,7 +65,7 @@ namespace AgarIO.Entities
         public float OldRadius { get; set; }
 
         /// <summary>
-        /// The default division time
+        /// The default division time.
         /// </summary>
         [ProtoBuf.ProtoIgnore]
         public const byte DefaultDivisionTime = 10;

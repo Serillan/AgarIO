@@ -1,4 +1,4 @@
-﻿using AgarIO.Entities;
+﻿using DarkAgar.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
     /// <summary>
     /// Represents the invalidation command.
     /// </summary>
-    /// <seealso cref="AgarIO.Commands.Command" />
+    /// <seealso cref="DarkAgar.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Invalidate : Command
     {
@@ -26,15 +26,6 @@ namespace AgarIO.Commands
         /// Used for deserialization.
         /// </summary>
         private Invalidate() { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Invalidate"/> class.
-        /// </summary>
-        /// <param name="invalidationMessage">The invalidation message.</param>
-        public Invalidate(string invalidationMessage)
-        {
-            InvalidationMessage = invalidationMessage;
-        }
 
         /// <summary>
         /// Processes the command received from the server.

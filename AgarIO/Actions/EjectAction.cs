@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Actions
+namespace DarkAgar.Actions
 {
 
     /// <summary>
     /// Represents the ejection action.
     /// </summary>
-    /// <seealso cref="AgarIO.Actions.Action" />
+    /// <seealso cref="DarkAgar.Actions.Action" />
     class EjectAction : Action
     {
         /// <summary>

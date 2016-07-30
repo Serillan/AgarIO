@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
     /// <summary>
     /// Represents the stop command.
     /// </summary>
-    /// <seealso cref="AgarIO.Commands.Command" />
+    /// <seealso cref="DarkAgar.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Stop : Command
     {

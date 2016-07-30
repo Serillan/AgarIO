@@ -6,16 +6,39 @@ using ProtoBuf;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
-using AgarIOServer.Commands;
+using DarkAgarServer.Commands;
 
-namespace AgarIOServer
+namespace DarkAgarServer
 {
+    /// <summary>
+    /// Connection Manager class that is responsible for controlling all the client connections.
+    /// </summary>
     class ConnectionManager
     {
+        /// <summary>
+        /// Gets or sets the connections.
+        /// </summary>
+        /// <value>The connections.</value>
         public List<ClientConnection> Connections { get; set; }
-        public Action<string, Commands.Command> PlayerCommandHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the player command handler that is called
+        /// every time when the command is received from the client.
+        /// </summary>
+        /// <value>The player command handler.</value>
+        public Action<string, Command> PlayerCommandHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new player handler.
+        /// It is called every time when the new player is successfully connected.
+        /// </summary>
+        /// <value>The new player handler.</value>
         public Action<string> NewPlayerHandler { get; set; }
 
+        /// <summary>
+        /// Starts listening for clients.
+        /// </summary>
+        /// <returns>Task.</returns>
         public async Task StartListeningAsync()
         {
             Connections = new List<ClientConnection>();
@@ -36,26 +59,32 @@ namespace AgarIOServer
             }
         }
 
-        private async Task ProcessClientAsync(ClientConnection conn)
+        /// <summary>
+        /// Processes the connected client. When the command is received
+        /// it calls the PlayerCommandHandler.
+        /// </summary>
+        /// <param name="clientConnection">The client connection.</param>
+        /// <returns>Task.</returns>
+        private async Task ProcessClientAsync(ClientConnection clientConnection)
         {
-            while (!conn.IsClosed)
+            while (!clientConnection.IsClosed)
             {
-                var receiveTask = conn.ReceiveCommandAsync();
+                var receiveTask = clientConnection.ReceiveCommandAsync();
                 var task = await Task.WhenAny(receiveTask, Task.Delay(100000));
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;
                     //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, command.GetType());
-                    PlayerCommandHandler(conn.PlayerName, command);
+                    PlayerCommandHandler(clientConnection.PlayerName, command);
                 }
                 else // timeout
                 {
-                    if (conn.IsClosed)
+                    if (clientConnection.IsClosed)
                         return;
 
-                    conn.SendAsync(new Commands.Stop());
-                    Console.WriteLine("Stopping player {0} because of timeout!", conn.PlayerName);
-                    PlayerCommandHandler(conn.PlayerName, new Commands.Stop());
+                    clientConnection.SendAsync(new Commands.Stop());
+                    Console.WriteLine("Stopping player {0} because of timeout!", clientConnection.PlayerName);
+                    PlayerCommandHandler(clientConnection.PlayerName, new Commands.Stop());
                     return;
                 }
             }
@@ -91,16 +120,28 @@ namespace AgarIOServer
             }
         }
 
-        public void SendToClient(string name, string msg)
+        /// <summary>
+        /// Sends the specified <paramref name="message"/> to the client with the specified
+        /// <paramref name="playerName"/>.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// <param name="message">The message.</param>
+        public void SendToClient(string playerName, string message)
         {
             ClientConnection conn = null;
             lock (Connections)
             {
-                conn = Connections.Find(p => p.PlayerName == name);
+                conn = Connections.Find(p => p.PlayerName == playerName);
             }
-            conn.SendAsync(msg);
+            conn.SendAsync(message);
         }
 
+        /// <summary>
+        /// Asynchronously sends the specified <paramref name="data"/> to the client with the specified
+        /// <paramref name="playerName"/>.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns>Task.</returns>
         public void SendToClient(string name, byte[] data)
         {
             ClientConnection conn = null;
@@ -111,7 +152,13 @@ namespace AgarIOServer
             conn.SendAsync(data);
         }
 
-        public void SendToClient(string name, Commands.Command command)
+        /// <summary>
+        /// Asynchronously sends the specified <paramref name="command"/> to the client with the specified
+        /// <paramref name="playerName"/>.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="command">The command.</param>
+        public void SendToClient(string name, Command command)
         {
             //Console.WriteLine("Sending {0} to client {1}", command.GetType().ToString(), name);
             var stream = new MemoryStream();
@@ -120,6 +167,10 @@ namespace AgarIOServer
             SendToClient(name, stream.ToArray());
         }
 
+        /// <summary>
+        /// Ends the client connection.
+        /// </summary>
+        /// <param name="client">The client.</param>
         public void EndClientConnection(ClientConnection client)
         {
             client.IsClosed = true;
@@ -131,6 +182,10 @@ namespace AgarIOServer
             client.Dispose();
         }
 
+        /// <summary>
+        /// Ends the client connection specified by the specified <paramref name="playerName"/>.
+        /// </summary>
+        /// <param name="playerName">Name of the player from the connection.</param>
         public void EndClientConnection(string playerName)
         {
             lock (Connections)
@@ -140,6 +195,13 @@ namespace AgarIOServer
             }
         }
 
+        /// <summary>
+        /// Determines whether connection for the client with the desired player name is allowed.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// <param name="playerEndPoint">The player end point.</param>
+        /// <param name="outputMessage">The output message.</param>
+        /// <returns><c>true</c> if connection is allowed for the client wth the desired player name; otherwise, <c>false</c>.</returns>
         private bool IsConnectionAllowed(string playerName, IPEndPoint playerEndPoint, out string outputMessage)
         {
             bool isNameAlreadyUsed = false;
@@ -166,6 +228,10 @@ namespace AgarIOServer
             return true;
         }
 
+        /// <summary>
+        /// Sends the specified <paramref name="command"/> to all connected clients.
+        /// </summary>
+        /// <param name="command">The command.</param>
         public void SendToAllClients(Command command)
         {
             var stream = new MemoryStream();

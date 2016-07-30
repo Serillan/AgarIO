@@ -3,25 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIOServer.Entities;
+using DarkAgarServer.Entities;
 
-namespace AgarIOServer.Commands
+namespace DarkAgarServer.Commands
 {
+    /// <summary>
+    /// Represents the ejection command.
+    /// </summary>
+    /// <seealso cref="DarkAgarServer.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Eject : Command
     {
+        /// <summary>
+        /// Gets or sets the x value (in game coordinates) of the position to which the part should be ejected.
+        /// </summary>
+        /// <value>The x.</value>
         [ProtoBuf.ProtoMember(1)]
         public float X { get; set; }
 
+        /// <summary>
+        /// Gets or sets the y value (in game coordinates) of the position to which the part should be ejected.
+        /// </summary>
+        /// <value>The y.</value>
+        /// TODO Edit XML Comment Template for Y
         [ProtoBuf.ProtoMember(2)]
         public float Y { get; set; }
 
-        public override void Process(GameServer game, string playerName)
+        /// <summary>
+        /// Processes the command received from the client.
+        /// </summary>
+        /// <param name="gameServer">The Game Server in which the command takes place.</param>
+        /// <param name="playerName">Name of the player.</param>
+        public override void Process(GameServer gameServer, string playerName)
         {
             Player player = null;
-            lock (game.GameState.Players)
+            lock (gameServer.GameState.Players)
             {
-                player = game.GameState.Players.Find(p => p.Name == playerName);
+                player = gameServer.GameState.Players.Find(p => p.Name == playerName);
             }
 
             lock (player)
@@ -44,7 +62,7 @@ namespace AgarIOServer.Commands
                 player.Parts.Add(new PlayerPart()
                 {
                     Mass = GameServer.BlobSize,
-                    DivisionTime = PlayerPart.DefaulDivisionTime,
+                    DivisionTime = PlayerPart.DefaultDivisionTime,
                     IsBeingEjected = true,
                     Identifier = (byte)freeIdentifier,
                     X = nearestPart.X,
@@ -58,9 +76,18 @@ namespace AgarIOServer.Commands
                 nearestPart.Mass -= GameServer.BlobSize;
 
             }
-            game.ConnectionManager.SendToClient(player.Name, new Invalidate("Ejection"));
+            gameServer.ConnectionManager.SendToClient(player.Name, new Invalidate("Ejection"));
         }
 
+        /// <summary>
+        /// Returns the distance between (<paramref name="x"/>, <paramref name="y"/>) and 
+        /// <paramref name="part"/>.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <param name="part">The part.</param>
+        /// <returns>The distance between (<paramref name="x"/>, <paramref name="y"/>) and 
+        /// <paramref name="part"/>.</returns>
         public float Distance(float x, float y, PlayerPart part)
         {
             var dx = x - part.X;

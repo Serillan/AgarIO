@@ -4,24 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
     /// <summary>
     /// Represents the ejection command.
     /// </summary>
-    /// <seealso cref="AgarIO.Commands.Command" />
+    /// <seealso cref="DarkAgar.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Eject : Command
     {
         /// <summary>
-        /// X value (in game coordinates) of the position to which the part should be ejected.
+        /// Gets or sets the x value (in game coordinates) of the position to which the part should be ejected.
         /// </summary>
         /// <value>The x.</value>
         [ProtoBuf.ProtoMember(1)]
         public float X { get; set; }
 
         /// <summary>
-        /// Y value (in game coordinates) of the position to which the part should be ejected.
+        /// Gets or sets the y value (in game coordinates) of the position to which the part should be ejected.
         /// </summary>
         /// <value>The y.</value>
         [ProtoBuf.ProtoMember(2)]

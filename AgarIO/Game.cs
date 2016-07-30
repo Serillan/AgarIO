@@ -1,13 +1,13 @@
-﻿using AgarIO.Actions;
-using AgarIO.Commands;
-using AgarIO.Entities;
+﻿using DarkAgar.Actions;
+using DarkAgar.Commands;
+using DarkAgar.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgarIO
+namespace DarkAgar
 {
     /// <summary>
     /// The main game class.

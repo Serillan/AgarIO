@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using ProtoBuf;
 using System.IO;
 
-namespace AgarIO
+namespace DarkAgar
 {
 
     /// <summary>

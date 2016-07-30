@@ -1,16 +1,16 @@
-﻿using AgarIO.Entities;
+﻿using DarkAgar.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
     /// <summary>
     /// Represents the update of the state command.
     /// </summary>
-    /// <seealso cref="AgarIO.Commands.Command" />
+    /// <seealso cref="DarkAgar.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class UpdateState : Command
     {

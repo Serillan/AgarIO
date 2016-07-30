@@ -8,39 +8,92 @@ using System.Net.Sockets;
 using ProtoBuf;
 using System.IO;
 
-namespace AgarIOServer
+namespace DarkAgarServer
 {
+
+    /// <summary>
+    /// Login Server that controls the connecting of players to the game server.
+    /// </summary>
+    /// <seealso cref="System.Net.Sockets.UdpClient" />
     class LoginServer : UdpClient
     {
+        /// <summary>
+        /// The login server port
+        /// </summary>
         public const int LoginServerPort = 11028;
 
-        private LoginServer(IPEndPoint ip) : base(ip) { }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginServer"/> class.
+        /// </summary>
+        /// <param name="ipEndPoint">The ip end point.</param>
+        private LoginServer(IPEndPoint ipEndPoint) : base(ipEndPoint) { }
 
+        /// <summary>
+        /// Gets the new instance.
+        /// </summary>
+        /// <returns>LoginServer.</returns>
         public static LoginServer GetNewInstance()
         {
             var server = new LoginServer(new IPEndPoint(IPAddress.Any, LoginServerPort));
             return server;
         }
 
+        /// <summary>
+        /// Sends the message to the client.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>Task.</returns>
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
-            //server.Send(bytes, bytes.Length);
             await SendAsync(bytes, bytes.Length);
         }
-
     }
 
+    /// <summary>
+    /// Controls the client connection.
+    /// </summary>
+    /// <seealso cref="System.IDisposable" />
     class ClientConnection : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the name of the player.
+        /// </summary>
+        /// <value>The name of the player.</value>
         public string PlayerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last movement time.
+        /// </summary>
+        /// <value>The last movement time.</value>
         public int LastMovementTime { get; set; }
-        public Boolean IsClosed { get; set; }
 
-        UdpClient UdpClient;
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is closed.
+        /// </summary>
+        /// <value><c>true</c> if this instance is closed; otherwise, <c>false</c>.</value>
+        public bool IsClosed { get; set; }
 
+        /// <summary>
+        /// Gets or sets the UDP client.
+        /// </summary>
+        /// <value>The UDP client.</value>
+        UdpClient UdpClient { get; set; }
+
+        /// <summary>
+        /// Delegate that is called for Authorizing new connected client.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// <param name="endPoint">The player end point.</param>
+        /// <param name="outputMessage">The output message.</param>
+        /// <returns><c>true</c> if client is authorized to connect, <c>false</c> otherwise.</returns>
         public delegate bool ClientAuthorizer(string playerName, IPEndPoint endPoint, out string outputMessage);
 
+        /// <summary>
+        /// Accepts a client.
+        /// </summary>
+        /// <param name="clientAuthorizer">The client authorizer.</param>
+        /// <returns>Task&lt;ClientConnection&gt;.</returns>
         public static async Task<ClientConnection> AcceptClientAsync(ClientAuthorizer clientAuthorizer)
         {
             ClientConnection conn = new ClientConnection();
@@ -53,7 +106,7 @@ namespace AgarIOServer
                 while (true)
                 {
                     var connectionResult = await loginServer.ReceiveAsync();
-                    var message = GetMessageFromConnectionResult(connectionResult);
+                    var message = GetMessageFromUdpReceiveResult(connectionResult);
 
                     if (message.Split().Length >= 2 && message.Split()[0] == "CONNECT")
                     {
@@ -88,7 +141,7 @@ namespace AgarIOServer
                     var connectionResult = conn.UdpClient.ReceiveAsync();
                     if (connectionResult == await Task.WhenAny(Task.Delay(1000), connectionResult))
                     {
-                        var message = GetMessageFromConnectionResult(connectionResult.Result);
+                        var message = GetMessageFromUdpReceiveResult(connectionResult.Result);
 
                         if (message == "ACK")
                         {
@@ -102,24 +155,54 @@ namespace AgarIOServer
             }
         }
 
+        /// <summary>
+        /// Sends the message to the client.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>Task.</returns>
         public async Task SendAsync(string message)
         {
             var bytes = Encoding.Default.GetBytes(message);
-            //UdpClient.Send(bytes, bytes.Length);
             await UdpClient.SendAsync(bytes, bytes.Length);
         }
 
+        /// <summary>
+        /// Sends the data to the client.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns>Task.</returns>
         public async Task SendAsync(byte[] data)
         {
             await UdpClient.SendAsync(data, data.Length);
         }
 
+        /// <summary>
+        /// Sends the command to the client.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>Task.</returns>
+        public async Task SendAsync(Commands.Command command)
+        {
+            var stream = new MemoryStream();
+            Serializer.Serialize(stream, command);
+            stream.Seek(0, SeekOrigin.Begin);
+            await SendAsync(stream.ToArray());
+        }
+
+        /// <summary>
+        /// Receives message from the client.
+        /// </summary>
+        /// <returns>Task&lt;System.String&gt;.</returns>
         public async Task<string> ReceiveAsync()
         {
             var res = await UdpClient.ReceiveAsync();
-            return GetMessageFromConnectionResult(res);
+            return GetMessageFromUdpReceiveResult(res);
         }
 
+        /// <summary>
+        /// Receives data from the client.
+        /// </summary>
+        /// <returns>Task&lt;System.Byte[]&gt;.</returns>
         public async Task<byte[]> ReceiveBinaryAsync()
         {
             byte[] res = null;
@@ -127,6 +210,10 @@ namespace AgarIOServer
             return res;
         }
 
+        /// <summary>
+        /// Receives command from the client.
+        /// </summary>
+        /// <returns>Task&lt;Commands.Command&gt;.</returns>
         public async Task<Commands.Command> ReceiveCommandAsync()
         {
             while (true)
@@ -147,23 +234,23 @@ namespace AgarIOServer
             }
         }
 
-        public async Task SendAsync(Commands.Command command)
-        {
-            var stream = new MemoryStream();
-            Serializer.Serialize(stream, command);
-            stream.Seek(0, SeekOrigin.Begin);
-            await SendAsync(stream.ToArray());
-        }
-
+        /// <summary>
+        /// Closes and disposes current server connection.
+        /// </summary>
         public void Dispose()
         {
             if (UdpClient != null)
                 UdpClient.Dispose();
         }
 
-        public static string GetMessageFromConnectionResult(UdpReceiveResult res)
+        /// <summary>
+        /// Gets the message from the specified UDP receive result.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns>System.String.</returns>
+        public static string GetMessageFromUdpReceiveResult(UdpReceiveResult result)
         {
-            var message = Encoding.Default.GetString(res.Buffer);
+            var message = Encoding.Default.GetString(result.Buffer);
             return message;
         }
 

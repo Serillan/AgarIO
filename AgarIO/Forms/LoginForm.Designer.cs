@@ -1,4 +1,4 @@
-﻿namespace AgarIO.Forms
+﻿namespace DarkAgar.Forms
 {
     partial class LoginForm
     {
@@ -32,10 +32,10 @@
             this.LoginTextBox = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.IPAdressTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.IPAddressTextBox = new System.Windows.Forms.TextBox();
+            this.AdressLabel = new System.Windows.Forms.Label();
             this.ServerListBox = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.HelpLabel = new System.Windows.Forms.Label();
             this.InfoLabel = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -67,7 +67,7 @@
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.panel1.Controls.Add(this.panel2);
-            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.HelpLabel);
             this.panel1.Controls.Add(this.InfoLabel);
             this.panel1.Controls.Add(this.LoginTextBox);
             this.panel1.Controls.Add(this.LoginButton);
@@ -80,40 +80,40 @@
             // panel2
             // 
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.Controls.Add(this.IPAdressTextBox);
-            this.panel2.Controls.Add(this.label2);
+            this.panel2.Controls.Add(this.IPAddressTextBox);
+            this.panel2.Controls.Add(this.AdressLabel);
             this.panel2.Controls.Add(this.ServerListBox);
-            this.panel2.Location = new System.Drawing.Point(460, 533);
+            this.panel2.Location = new System.Drawing.Point(460, 466);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(495, 111);
+            this.panel2.Size = new System.Drawing.Size(495, 169);
             this.panel2.TabIndex = 7;
             // 
-            // IPAdressTextBox
+            // IPAddressTextBox
             // 
-            this.IPAdressTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.IPAdressTextBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.IPAdressTextBox.Location = new System.Drawing.Point(85, 76);
-            this.IPAdressTextBox.Multiline = true;
-            this.IPAdressTextBox.Name = "IPAdressTextBox";
-            this.IPAdressTextBox.Size = new System.Drawing.Size(368, 32);
-            this.IPAdressTextBox.TabIndex = 5;
-            this.IPAdressTextBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.IPAdressTextBox_MouseClick);
+            this.IPAddressTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.IPAddressTextBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.IPAddressTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.IPAddressTextBox.Location = new System.Drawing.Point(19, 122);
+            this.IPAddressTextBox.Multiline = true;
+            this.IPAddressTextBox.Name = "IPAddressTextBox";
+            this.IPAddressTextBox.Size = new System.Drawing.Size(368, 32);
+            this.IPAddressTextBox.TabIndex = 5;
+            this.IPAddressTextBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.IPAddressTextBox_MouseClick);
             // 
-            // label2
+            // AdressLabel
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label2.ForeColor = System.Drawing.SystemColors.MenuText;
-            this.label2.Location = new System.Drawing.Point(135, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(178, 29);
-            this.label2.TabIndex = 6;
-            this.label2.Text = "Server Adress";
+            this.AdressLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.AdressLabel.AutoSize = true;
+            this.AdressLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.AdressLabel.ForeColor = System.Drawing.SystemColors.MenuText;
+            this.AdressLabel.Location = new System.Drawing.Point(134, 16);
+            this.AdressLabel.Name = "AdressLabel";
+            this.AdressLabel.Size = new System.Drawing.Size(193, 29);
+            this.AdressLabel.TabIndex = 6;
+            this.AdressLabel.Text = "Server Address";
             // 
             // ServerListBox
             // 
-            this.ServerListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ServerListBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ServerListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ServerListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -123,21 +123,21 @@
             "localhost",
             "gameserver.northeurope.cloudapp.azure.com",
             "own IP "});
-            this.ServerListBox.Location = new System.Drawing.Point(3, 31);
+            this.ServerListBox.Location = new System.Drawing.Point(19, 48);
             this.ServerListBox.Name = "ServerListBox";
             this.ServerListBox.Size = new System.Drawing.Size(450, 80);
             this.ServerListBox.TabIndex = 4;
             // 
-            // label1
+            // HelpLabel
             // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.Location = new System.Drawing.Point(318, 375);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(296, 100);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Use mouse to control the cell.\r\nPress Space to split.\r\nPress W to eject some mass" +
+            this.HelpLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.HelpLabel.AutoSize = true;
+            this.HelpLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.HelpLabel.Location = new System.Drawing.Point(318, 375);
+            this.HelpLabel.Name = "HelpLabel";
+            this.HelpLabel.Size = new System.Drawing.Size(296, 100);
+            this.HelpLabel.TabIndex = 3;
+            this.HelpLabel.Text = "Use mouse to control the cell.\r\nPress Space to split.\r\nPress W to eject some mass" +
     ".\r\n\r\n";
             // 
             // InfoLabel
@@ -177,10 +177,10 @@
         public System.Windows.Forms.TextBox LoginTextBox;
         private System.Windows.Forms.Panel panel1;
         public System.Windows.Forms.Label InfoLabel;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label HelpLabel;
         public System.Windows.Forms.ListBox ServerListBox;
-        public System.Windows.Forms.TextBox IPAdressTextBox;
-        private System.Windows.Forms.Label label2;
+        public System.Windows.Forms.TextBox IPAddressTextBox;
+        private System.Windows.Forms.Label AdressLabel;
         private System.Windows.Forms.Panel panel2;
     }
 }

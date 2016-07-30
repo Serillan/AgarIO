@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Entities
+namespace DarkAgar.Entities
 {
     /// <summary>
     /// Represents the game entity.

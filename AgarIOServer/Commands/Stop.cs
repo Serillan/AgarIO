@@ -4,29 +4,44 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIOServer.Commands
+namespace DarkAgarServer.Commands
 {
+    /// <summary>
+    /// Represents the stop command.
+    /// </summary>
+    /// <seealso cref="DarkAgarServer.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Stop : Command
     {
+        /// <summary>
+        /// Gets or sets the stop message.
+        /// </summary>
+        /// <value>The stop message.</value>
         [ProtoBuf.ProtoMember(1)]
         public string StopMessage { get; set; }
 
+        /// <summary>
+        /// Processes the command received from the client.
+        /// </summary>
+        /// <param name="gameServer">The Game Server in which the command takes place.</param>
+        /// <param name="playerName">Name of the player.</param>
         public override void Process(GameServer gameServer, string playerName)
         {
-            /*
-            lock (gameServer.GameState)
-                gameServer.GameState.Players.RemoveAll(p => p.Name == playerName);
-            gameServer.ConnectionManager.EndClientConnection(playerName);
-            */
             gameServer.RemovePlayer(playerName, StopMessage);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Stop"/> class.
+        /// </summary>
         public Stop() { }
 
-        public Stop(string msg)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Stop" /> class.
+        /// </summary>
+        /// <param name="stopMessage">The stop message.</param>
+        public Stop(string stopMessage)
         {
-            StopMessage = msg;
+            this.StopMessage = stopMessage;
         }
 
     }

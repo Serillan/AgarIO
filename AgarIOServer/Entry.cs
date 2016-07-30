@@ -4,24 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIOServer
+namespace DarkAgarServer
 {
+    /// <summary>
+    /// The class that contains the entry point of the application.
+    /// </summary>
     class Entry
     {
+        /// <summary>
+        /// Defines the entry point of the application.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
         static void Main(string[] args)
         {
-            Console.WriteLine("Server started!");
             ConnectionManager manager = new ConnectionManager();
             Console.WriteLine("Starting listening loop");
             var task = manager.StartListeningAsync();
-            
 
             Console.WriteLine("Starting game loop");
             GameServer game = new GameServer(manager);
             game.Start();
+            Console.WriteLine("Server started!");
 
-
-            Console.WriteLine("Waiting for Manager task to complete.");
+            Console.WriteLine("Waiting for the connection manager task to complete.");
             if (!task.IsCompleted)
                 task.Wait();
 

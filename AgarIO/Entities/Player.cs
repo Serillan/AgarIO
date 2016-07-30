@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Entities
+namespace DarkAgar.Entities
 {
     /// <summary>
     /// Represents the Player entity.
     /// </summary>
-    /// <seealso cref="AgarIO.Entities.Entity" />
+    /// <seealso cref="DarkAgar.Entities.Entity" />
     [ProtoBuf.ProtoContract]
     class Player : Entity
     {
@@ -23,11 +23,13 @@ namespace AgarIO.Entities
         /// <summary>
         /// Gets or sets the parts of the player.
         /// </summary>
+        /// <value>The parts.</value>
         [ProtoBuf.ProtoMember(2)]
         public List<PlayerPart> Parts { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the player parts.
+        /// Color is in the format [red, green, blue] in the array.
         /// </summary>
         /// <value>The color.</value>
         [ProtoBuf.ProtoMember(3)]

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Commands
+namespace DarkAgar.Commands
 {
     /// <summary>
     /// Represents the division command.
     /// </summary>
-    /// <seealso cref="AgarIO.Commands.Command" />
+    /// <seealso cref="DarkAgar.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {

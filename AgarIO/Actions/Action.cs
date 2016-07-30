@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Actions
+namespace DarkAgar.Actions
 {
     /// <summary>
     /// Represents the player action.

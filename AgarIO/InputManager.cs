@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIO.Forms;
+using DarkAgar.Forms;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
-namespace AgarIO
+namespace DarkAgar
 {
     /// <summary>
     /// The Input Manager class is used for controlling the game input.

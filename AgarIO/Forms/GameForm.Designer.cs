@@ -1,4 +1,4 @@
-﻿namespace AgarIO.Forms
+﻿namespace DarkAgar.Forms
 {
     partial class GameForm
     {
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.GamePanel = new AgarIO.Forms.GamePanel();
+            this.GamePanel = new DarkAgar.Forms.GamePanel();
             this.ScoreLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.GamePanel)).BeginInit();
             this.GamePanel.SuspendLayout();
@@ -36,9 +36,7 @@
             // 
             // GamePanel
             // 
-            this.GamePanel.Buffer = null;
             this.GamePanel.Controls.Add(this.ScoreLabel);
-            this.GamePanel.Display = null;
             this.GamePanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GamePanel.Location = new System.Drawing.Point(0, 0);
             this.GamePanel.Name = "GamePanel";

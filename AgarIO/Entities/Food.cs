@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgarIO.Entities
+namespace DarkAgar.Entities
 {
     /// <summary>
     /// Represents the food entity.
     /// </summary>
-    /// <seealso cref="AgarIO.Entities.Entity" />
+    /// <seealso cref="DarkAgar.Entities.Entity" />
     [ProtoBuf.ProtoContract]
     class Food : Entity, IEquatable<Food>
     {
         /// <summary>
         /// Gets or sets the color.
+        /// Color is in the format [red, green, blue] in the array.
         /// </summary>
         /// <value>The color.</value>
         [ProtoBuf.ProtoMember(1)]

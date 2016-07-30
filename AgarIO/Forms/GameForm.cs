@@ -9,61 +9,30 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AgarIO.Forms
+namespace DarkAgar.Forms
 {
+    /// <summary>
+    /// Game Form used for displaying the game.
+    /// </summary>
+    /// <seealso cref="System.Windows.Forms.Form" />
     partial class GameForm : Form
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GameForm"/> class.
+        /// </summary>
         public GameForm()
         {
             InitializeComponent();
         }
-        /*
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x02000000;
-                return cp;
-            }
-        }
-        */
     }
 
+    /// <summary>
+    /// Game Panel used for displaying the game.
+    /// </summary>
+    /// <seealso cref="System.Windows.Forms.PictureBox" />
     class GamePanel : PictureBox
     {
-        public Bitmap Buffer { get; set; }
-        public Bitmap Display { get; set; }
-
-        public GamePanel()
-        {
-            //this.DoubleBuffered = true;
-           // SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint |
-            //   ControlStyles.UserPaint, true);
-            // Enable double buffering to stop flickering.
-            //if (!this.IsHandleCreated)
-            //{
-             //   this.CreateHandle();
-            //}
-        }
-
-
-
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            //var a = Stopwatch.GetTimestamp();
-            base.OnPaint(e);
-            /*
-            if (Display != null)
-                lock (Display)
-                    e.Graphics.DrawImage(Display, Point.Empty);
-
-            Debug.WriteLine("---- {0}ms",
-                1000 * (Stopwatch.GetTimestamp() - a) / Stopwatch.Frequency);
-                */
-        }
 
     }
 }

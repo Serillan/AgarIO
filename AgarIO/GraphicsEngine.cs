@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIO.Forms;
+using DarkAgar.Forms;
 using System.Drawing;
 using System.Windows.Forms;
-using AgarIO.Entities;
+using DarkAgar.Entities;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
-namespace AgarIO
+namespace DarkAgar
 {
     /// <summary>
     /// Graphic Engine class used for rendering the game.

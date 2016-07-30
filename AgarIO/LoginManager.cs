@@ -4,10 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIO.Forms;
+using DarkAgar.Forms;
 using System.Diagnostics;
 
-namespace AgarIO
+namespace DarkAgar
 {
     /// <summary>
     /// The Login Manager class responsible for controlling the login to the game.
@@ -52,7 +52,7 @@ namespace AgarIO
                     ServerAddress = Dns.GetHostAddresses("gameserver.northeurope.cloudapp.azure.com")[0];
                     break;
                 case 2:
-                    if (!IPAddress.TryParse(LoginForm.IPAdressTextBox.Text, out ServerAddress))
+                    if (!IPAddress.TryParse(LoginForm.IPAddressTextBox.Text, out ServerAddress))
                     {
                         LoginForm.InfoLabel.Text = "Invalid IP Adress";
                         return;

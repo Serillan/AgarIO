@@ -4,15 +4,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIO.Entities;
+using DarkAgar.Entities;
 using System.Diagnostics;
 
-namespace AgarIO.Actions
+namespace DarkAgar.Actions
 {
     /// <summary>
     /// Represents the movement action.
     /// </summary>
-    /// <seealso cref="AgarIO.Actions.Action" />
+    /// <seealso cref="DarkAgar.Actions.Action" />
     class MovementAction : Action
     {
         /// <summary>

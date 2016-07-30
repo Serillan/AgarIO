@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AgarIOServer.Entities;
+using DarkAgarServer.Entities;
 using System.Diagnostics;
 using System.Threading;
 
-namespace AgarIOServer.Commands
+namespace DarkAgarServer.Commands
 {
+    /// <summary>
+    /// Represents the movement command.
+    /// </summary>
+    /// <seealso cref="DarkAgarServer.Commands.Command" />
     [ProtoBuf.ProtoContract]
     class Move : Command
     {
@@ -16,20 +20,31 @@ namespace AgarIOServer.Commands
         /// Specifies where player parts should be moved.
         /// First argument of the tuple is part identifier and other two arguments are new coordinates.
         /// </summary>
+        /// <value>The movement.</value>
         [ProtoBuf.ProtoMember(1)]
         public List<Tuple<int, float, float, float>> Movement { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time that describes in which cycle of the game loop the movement took place.
+        /// Used for synchronization with the server.
+        /// </summary>
+        /// <value>The time.</value>
         [ProtoBuf.ProtoMember(2)]
         public long Time { get; set; }
 
-        public override void Process(GameServer server, string playerName)
+        /// <summary>
+        /// Processes the command received from the client.
+        /// </summary>
+        /// <param name="gameServer">The Game Server in which the command takes place.</param>
+        /// <param name="playerName">Name of the player.</param>
+        public override void Process(GameServer gameServer, string playerName)
         {
-            var state = server.GameState;
+            var gameState = gameServer.GameState;
             Player player = null;
 
-            lock (state.Players)
+            lock (gameState.Players)
             {
-                player = state.Players.Find(p => p.Name == playerName);
+                player = gameState.Players.Find(p => p.Name == playerName);
             }
 
             if (player == null)
@@ -47,75 +62,22 @@ namespace AgarIOServer.Commands
                     player.FirstMovementTime = Time;
                 }
 
-
-                //var currentServerTime = Stopwatch.GetTimestamp();
-                //var deltaServerTime = 1000 * (currentServerTime - player.LastMovementServerTime) / Stopwatch.Frequency; // (ms)
-                //double deltaMovementTime = Time - player.LastMovementTime; // 1 tick per movement
-                //var deltaGameTime = deltaMovementTime * GameServer.GameLoopInterval;
-
-
                 switch (Check(player))
                 {
-                    // KICK CHEATERS !!!
                     case MovementCheckResult.Overspeed:
-                        //server.ConnectionManager.SendToClient(playerName, new Stop("Speed hack detected!"));
-                        //server.ConnectionManager.EndClientConnection(playerName);
-                        //server.RemovePlayer(playerName, "Speed hack detected!");
-                        server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
+                        gameServer.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
 
                         break;
+
                     case MovementCheckResult.InvalidLocation:
-                        //server.ConnectionManager.SendToClient(playerName, new Stop("Invalid location!"));
-                        //server.ConnectionManager.EndClientConnection(playerName);
-                        //server.RemovePlayer(playerName, "Invalid location!");
-                        server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
+                        gameServer.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
 
                         break;
-                    #region speed fixing
-                    // possible fixing ...
-                    /*
-                    if (deltaGameTime > deltaServerTime)
-                        deltaMovementTime = (double)deltaServerTime / GameServer.GameLoopInterval;
 
-                    foreach (var part in player.Parts)
-                    {
-                        var movement = Movement.Find(t => t.Item1 == part.Identifier);
-
-                        double dx = movement.Item2 - part.X;
-                        double dy = movement.Item3 - part.Y;
-
-                        double size = Math.Sqrt(dx * dx + dy * dy);
-                        if (size == 0) // no movement (corner)
-                            return;
-                        // normalize
-                        dx /= size;
-                        dy /= size;
-
-                        var nextX = part.X + (float)(dx * part.Speed * deltaMovementTime);
-                        var nextY = part.Y + (float)(dy * part.Speed * deltaMovementTime);
-
-                        //Console.WriteLine("oldX {0} oldY {1} newX {2} newY {3}", part.X, part.Y, movement.Item2, movement.Item3);
-
-                        // fix location
-                        if (nextX > GameServer.MaxLocationX || nextX < 0)
-                            nextX = part.X;
-                        if (nextY > GameServer.MaxLocationY || nextY < 0)
-                            nextY = part.Y;
-
-                        // apply
-                        part.X = nextX;
-                        part.Y = nextY;
-                    }
-                    server.ConnectionManager.SendToClient(playerName, new Invalidate("Movement speed is too fast!"));
-                    //server.ConnectionManager.SendToClient(playerName, new UpdateState(server.GameState));
-
-                    break;
-                    */
-                    #endregion
                     case MovementCheckResult.OK:
+
                         bool toBeInvalidated = false;
-                        //Console.WriteLine("Entering player lock  " + playerName);
-                        //Console.WriteLine("Entered player lock  " + playerName);
+
                         List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
                         List<PlayerPart> partsToBeMerged = new List<PlayerPart>();
                         List<PlayerPart> ejectedPartsToBeRemoved = new List<PlayerPart>();
@@ -123,7 +85,6 @@ namespace AgarIOServer.Commands
                         foreach (var part in player.Parts)
                         {
                             var movement = Movement.Find(t => t.Item1 == part.Identifier);
-                            //Console.WriteLine("oldX {0} oldY {1} newX {2} newY {3}", part.X, part.Y, movement.Item2, movement.Item3);
 
                             part.X = movement.Item2;
                             part.Y = movement.Item3;
@@ -140,143 +101,41 @@ namespace AgarIOServer.Commands
                             if (part.DivisionTime == 0 && part.IsBeingEjected)
                             {
                                 ejectedPartsToBeRemoved.Add(part);
-                                lock (state.Food)
+                                lock (gameState.Food)
                                 {
-                                    state.Food.Add(new Food(part.X, part.Y, part.Mass)
+                                    gameState.Food.Add(new Food(part.X, part.Y, part.Mass)
                                     {
                                         Color = player.Color
                                     });
                                 }
                             }
-
-                            // part.Mass++;
-                            // toBeInvalidated = true;
                         }
 
                         if (player.Parts.RemoveAll(p => ejectedPartsToBeRemoved.Contains(p)) > 0)
                             toBeInvalidated = true;
 
-                        partsToBeMerged.ForEach(p => p.IsMerged = false );
-
-                        foreach (var part in partsToBeMerged)
-                        {
-                            if (part.IsMerged)
-                                continue;
-
-                            var mergingPart = partsToBeMerged.Find(p => p != part && !p.IsMerged && CanBeMerged(part, p));
-                            if (mergingPart != null) // merge
-                            {
-                                part.Mass += mergingPart.Mass;
-                                part.MergeTime = (int)Math.Round((0.02 * part.Mass + 5) * 1000 / GameServer.GameLoopInterval);
-                                player.Parts.Remove(mergingPart);
-                                mergingPart.IsMerged = true;
-                                toBeInvalidated = true;
-                            }
-                        }
+                        // merging
+                        if (ProcessMerging(player, partsToBeMerged))
+                            toBeInvalidated = true;
 
                         // viruses
-                        if (ProcessViruses(player, server))
+                        if (ProcessViruses(player, gameServer.GameState))
                             toBeInvalidated = true;
 
                         // eating food
-                        var eatenFood = new HashSet<Food>();
-                        var newFood = new List<Food>();
-                        lock (server.GameState.Food)
-                        {
-                            foreach (var food in server.GameState.Food)
-                                foreach (var part in player.Parts)
-                                    if (CanBeEaten(food, part))
-                                    {
-                                        var movement = Movement.Find(t => t.Item1 == part.Identifier);
-                                        part.Mass += food.Mass;
+                        if (ProcessEatingFood(player, gameServer.GameState))
+                            toBeInvalidated = true;
 
-                                        if (movement.Item4 != part.Mass) // invalid prediction
-                                        {
-                                            Console.WriteLine($"Invalid food prediction mass before eating - {part.Mass - food.Mass} correct - {part.Mass} got - {movement.Item4}");
-                                            toBeInvalidated = true;
-                                        }
-
-                                        eatenFood.Add(food);
-                                        // new food
-                                        newFood.Add(GenerateNewFood());
-                                    }
-
-                            server.GameState.Food.RemoveAll(f => eatenFood.Contains(f));
-                            newFood.ForEach(f => server.GameState.Food.Add(f));
-                        }
-
-                        // eating player
-
-                        var eatenPlayers = new HashSet<Player>();
-                        lock (server.GameState.Players)
-                        {
-                            foreach (var otherPlayer in server.GameState.Players)
-                            {
-                                //Console.WriteLine("Entering player lock with try  " + playerName);
-                                if (Monitor.TryEnter(otherPlayer)) // deadlock prevention
-                                {
-                                    // Console.WriteLine("Entered player lock with try  " + playerName);
-                                    if (player.Name == otherPlayer.Name)
-                                    {
-                                        Monitor.Exit(otherPlayer);
-                                        // Console.WriteLine("Exited player lock with try  " + playerName);
-                                        continue;
-                                    }
-
-                                    HashSet<PlayerPart> partsToBeRemoved = new HashSet<PlayerPart>();
-
-                                    foreach (var part in player.Parts)
-                                        foreach (var otherPlayerPart in otherPlayer.Parts)
-                                        {
-                                            if (CanBeEaten(part, otherPlayerPart) && !partsToBeRemoved.Contains(otherPlayerPart)
-                                                && !partsToBeRemoved.Contains(part))
-                                            {
-                                                part.Mass += otherPlayerPart.Mass;
-                                                partsToBeRemoved.Add(otherPlayerPart);
-                                            }
-                                            if (CanBeEaten(otherPlayerPart, part) && !partsToBeRemoved.Contains(otherPlayerPart)
-                                                && !partsToBeRemoved.Contains(part))
-                                            {
-                                                otherPlayerPart.Mass += part.Mass;
-                                                partsToBeRemoved.Add(part);
-                                            }
-                                        }
-                                    if (partsToBeRemoved.Count > 0)
-                                    {
-                                        toBeInvalidated = true;
-                                        server.ConnectionManager.SendToClient(otherPlayer.Name, new Invalidate("Eating"));
-                                    }
-
-                                    otherPlayer.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
-                                    player.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
-
-                                    if (otherPlayer.Parts.Count == 0)
-                                        eatenPlayers.Add(otherPlayer); // cannot be removed while enumerated!
-
-                                    if (player.Parts.Count == 0)
-                                        eatenPlayers.Add(player);
-
-                                    Monitor.Exit(otherPlayer);
-                                    //Console.WriteLine("Exited player lock with try  " + playerName);
-                                }
-                            }
-
-                            foreach (var eatenPlayer in eatenPlayers)
-                            {
-                                server.RemovePlayer(eatenPlayer.Name, "You have been eaten!");
-                            }
-
-                        }
+                        // eating players
+                        if (ProcessEatingPlayers(player, gameServer))
+                            toBeInvalidated = true;
 
                         if (toBeInvalidated)
-                            server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
+                            gameServer.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
 
                     case MovementCheckResult.OtherError:
                         // invalidate here would have effect on ejecting teleportation etc. (in case of higher latency)
-
-                        //server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement command!"));
-                        //server.RemovePlayer(playerName, "Invalid movement command!");
                         //server.ConnectionManager.SendToClient(playerName, new Invalidate("Invalid movement"));
                         break;
                 }
@@ -284,15 +143,22 @@ namespace AgarIOServer.Commands
             }
         }
 
+        /// <summary>
+        /// Represents the result of the movement check.
+        /// </summary>
         private enum MovementCheckResult
         {
             Overspeed, InvalidLocation, OK, OtherError
         }
 
+        /// <summary>
+        /// Checks the correctness of the movement.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <returns>MovementCheckResult.</returns>
         private MovementCheckResult Check(Player player)
         {
             var res = MovementCheckResult.OK;
-            //return res;
 
             var currentServerTime = Stopwatch.GetTimestamp();
             var deltaMovementTime = Time - player.LastMovementTime; // 1 tick per movement
@@ -309,9 +175,6 @@ namespace AgarIOServer.Commands
                 Console.WriteLine("Allowed number of ticks : {0}, actual number : {1}",
                     deltaFromFirstServerTime / GameServer.GameLoopInterval, Time - player.FirstMovementTime);
             }
-
-            // if (deltaServerTime < GameServer.GameLoopInterval)
-            //     Console.WriteLine(deltaServerTime);
 
             // 1. check whether such a movement can happen
             foreach (var part in player.Parts)
@@ -341,7 +204,7 @@ namespace AgarIOServer.Commands
                 if (distance == 0 && !IsOnEdge(movement.Item2, movement.Item3))
                 {
                     //Console.WriteLine("edge error");
-                   // res = MovementCheckResult.OtherError;
+                    //res = MovementCheckResult.OtherError;
                 }
 
                 distance = distance / deltaMovementTime; // distance per movement
@@ -364,16 +227,23 @@ namespace AgarIOServer.Commands
                 part.MergeTime++;
                 part.DivisionTime++;
             }
+            /*
             if (res == MovementCheckResult.Overspeed)
-                Console.WriteLine("Ended with overspeed");
+                Console.WriteLine("Ended with over speed");
             else if (res == MovementCheckResult.InvalidLocation)
                 Console.WriteLine("Invalid location");
             else if (res == MovementCheckResult.OtherError)
                 Console.WriteLine("other error");
-
+            */
             return res;
         }
 
+        /// <summary>
+        /// Determines whether (<paramref name="x"/>, <paramref name="y"/>) is on the edge.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <returns><c>true</c> if (<paramref name="x"/>, <paramref name="y"/>) is on the edge; otherwise, <c>false</c>.</returns>
         private bool IsOnEdge(float x, float y)
         {
             bool isX = x == GameServer.MaxLocationX || x == 0;
@@ -381,6 +251,12 @@ namespace AgarIOServer.Commands
             return isX || isY;
         }
 
+        /// <summary>
+        /// Determines whether <paramref name="part1"/> is in collision with <paramref name="part2"/>.
+        /// </summary>
+        /// <param name="part1">The part1.</param>
+        /// <param name="part2">The part2.</param>
+        /// <returns><c>true</c> if <paramref name="part1"/> is in collision with <paramref name="part2"/>, <c>false</c> otherwise.</returns>
         private bool AreInCollision(PlayerPart part1, PlayerPart part2)
         {
             var dx = part2.X - part1.X;
@@ -389,17 +265,97 @@ namespace AgarIOServer.Commands
             return distance <= 0.9999 * (part1.Radius + part2.Radius);
         }
 
+        /// <summary>
+        /// Generates new food.
+        /// </summary>
+        /// <returns>Food.</returns>
         private Food GenerateNewFood()
         {
-            var random = GameServer.RandomG;
+            var random = GameServer.RandomGenerator;
             return new Food(random.Next(GameServer.MaxLocationX), random.Next(GameServer.MaxLocationY),
                 random.Next(GameServer.MinSizeOfFood, GameServer.MaxSizeOfFood));
         }
 
-        private bool ProcessViruses(Player player, GameServer server)
+        /// <summary>
+        /// Processes the merging.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <param name="partsToBeMerged">The parts to be merged.</param>
+        /// <returns><c>true</c> if player's prediction should be invalidated, <c>false</c> otherwise.</returns>
+        private bool ProcessMerging(Player player, List<PlayerPart> partsToBeMerged)
+        {
+            var toBeInvalidated = false;
+
+            partsToBeMerged.ForEach(p => p.IsMerged = false);
+
+            foreach (var part in partsToBeMerged)
+            {
+                if (part.IsMerged)
+                    continue;
+
+                var mergingPart = partsToBeMerged.Find(p => p != part && !p.IsMerged && CanBeMerged(part, p));
+                if (mergingPart != null) // merge
+                {
+                    part.Mass += mergingPart.Mass;
+                    part.MergeTime = (int)Math.Round((0.02 * part.Mass + 5) * 1000 / GameServer.GameLoopInterval);
+                    player.Parts.Remove(mergingPart);
+                    mergingPart.IsMerged = true;
+                    toBeInvalidated = true;
+                }
+            }
+
+            return toBeInvalidated;
+        }
+
+        /// <summary>
+        /// Processes the eating of food.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <param name="gameState">State of the game.</param>
+        /// <returns><c>true</c> if player's prediction should be invalidated, <c>false</c> otherwise.</returns>
+        private bool ProcessEatingFood(Player player, GameState gameState)
+        {
+            var toBeInvalidated = false;
+
+            var eatenFood = new HashSet<Food>();
+            var newFood = new List<Food>();
+            lock (gameState.Food)
+            {
+                foreach (var food in gameState.Food)
+                    foreach (var part in player.Parts)
+                        if (CanBeEaten(food, part))
+                        {
+                            var movement = Movement.Find(t => t.Item1 == part.Identifier);
+                            part.Mass += food.Mass;
+
+                            if (movement.Item4 != part.Mass) // invalid prediction
+                            {
+                                Console.WriteLine($"Invalid food prediction mass before eating - {part.Mass - food.Mass} correct - {part.Mass} got - {movement.Item4}");
+                                toBeInvalidated = true;
+                            }
+
+                            eatenFood.Add(food);
+                            // new food
+                            newFood.Add(GenerateNewFood());
+                        }
+
+                gameState.Food.RemoveAll(f => eatenFood.Contains(f));
+                newFood.ForEach(f => gameState.Food.Add(f));
+
+                return toBeInvalidated;
+            }
+        }
+
+        /// <summary>
+        /// Processes viruses.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <param name="gameState">State of the game.</param>
+        /// <returns><c>true</c> if player's prediction should be invalidated, <c>false</c> otherwise.</returns>
+        private bool ProcessViruses(Player player, GameState gameState)
         {
             var res = false;
-            lock (server.GameState.Viruses)
+            lock (gameState.Viruses)
             {
                 var newParts = new List<PlayerPart>();
                 var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
@@ -409,7 +365,8 @@ namespace AgarIOServer.Commands
                 {
                     Virus virus;
 
-                    if (player.Parts.Count < 16 && server.GameState.Viruses.Exists(v => CanBeDividedByVirus(v, part)))
+                    if (player.Parts.Count < GameServer.PlayerMaximumNumberOfPartsForDivision && 
+                        gameState.Viruses.Exists(v => CanBeDividedByVirus(v, part)))
                     {
                         res = true;
 
@@ -436,18 +393,19 @@ namespace AgarIOServer.Commands
                         });
 
                     }
-                    else if (player.Parts.Count >= 16 && (virus = server.GameState.Viruses.Find(v => CanBeEaten(v, part))) != null) // eat virus
+                    else if (player.Parts.Count >= GameServer.PlayerMaximumNumberOfPartsForDivision &&
+                        (virus = gameState.Viruses.Find(v => CanBeEaten(v, part))) != null) // eat virus
                     {
                         res = true;
-                        server.GameState.Viruses.Remove(virus);
+                        gameState.Viruses.Remove(virus);
                         part.Mass += virus.Mass;
                         newParts.Add(part);
 
                         // generate new virus
                         var playersParts = new List<PlayerPart>();
-                        lock (server.GameState.Players)
+                        lock (gameState.Players)
                         {
-                            foreach (var otherPlayer in server.GameState.Players)
+                            foreach (var otherPlayer in gameState.Players)
                             {
                                 if (Monitor.TryEnter(otherPlayer)) // -> virus sometimes might spawn on the player
                                 {
@@ -460,16 +418,16 @@ namespace AgarIOServer.Commands
                                 }
                             }
 
-                            server.GameState.Viruses.Add(new Virus(playersParts));
+                            gameState.Viruses.Add(new Virus(playersParts));
                         }
                     }
-                    else if (part.IsBeingEjected && (virus = server.GameState.Viruses.Find(v => CanBeEatenByVirus(v, part))) != null)
+                    else if (part.IsBeingEjected && (virus = gameState.Viruses.Find(v => CanBeEatenByVirus(v, part))) != null)
                     {
                         res = true;
                         virus.Mass += part.Mass;
 
                         if (virus.Mass > GameServer.MaxVirusSize)
-                            DivideVirus(virus, server);
+                            DivideVirus(virus, gameState);
 
                         // part wont be added to newParts -> therefore will be removed
                     }
@@ -478,32 +436,108 @@ namespace AgarIOServer.Commands
                 }
                 player.Parts = newParts;
 
-                // virus animation
-                foreach (var virus in server.GameState.Viruses)
+                // virus movement
+                foreach (var virus in gameState.Viruses)
                 {
-                    if (virus.AnimationEndTime == virus.AnimationStartTime)
-                        continue; // no animation
+                    if (virus.MovementEndTime == virus.MovementStartTime)
+                        continue; // no movement
 
-                    var animationTime = ((double)Stopwatch.GetTimestamp() - virus.AnimationStartTime) /
-                        (virus.AnimationEndTime - virus.AnimationStartTime);
+                    var movementTime = ((double)Stopwatch.GetTimestamp() - virus.MovementStartTime) /
+                        (virus.MovementEndTime - virus.MovementStartTime);
 
-                    if (animationTime >= 1)
+                    if (movementTime >= 1)
                     {
                         virus.X = virus.EndX;
                         virus.Y = virus.EndY;
-                        virus.AnimationStartTime = virus.AnimationEndTime = 0;
+                        virus.MovementStartTime = virus.MovementEndTime = 0;
                     }
                     else
                     {
-                        virus.X = (float)(virus.StartX + animationTime * (virus.EndX - virus.StartX));
-                        virus.Y = (float)(virus.StartY + animationTime * (virus.EndY - virus.StartY));
+                        virus.X = (float)(virus.StartX + movementTime * (virus.EndX - virus.StartX));
+                        virus.Y = (float)(virus.StartY + movementTime * (virus.EndY - virus.StartY));
                     }
                 }
             }
             return res;
         }
 
-        private void DivideVirus(Virus virus, GameServer server)
+        /// <summary>
+        /// Processes the eating of players.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <param name="gameServer">The server.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if player's prediction should be invalidated, <c>false</c> otherwise.</returns>
+        private bool ProcessEatingPlayers(Player player, GameServer gameServer)
+        {
+            var toBeInvalidated = false;
+            var gameState = gameServer.GameState;
+
+            var eatenPlayers = new HashSet<Player>();
+            lock (gameState.Players)
+            {
+                foreach (var otherPlayer in gameState.Players)
+                {
+                    if (Monitor.TryEnter(otherPlayer)) // deadlock prevention - cycles are fast and other player move might
+                    {                                  // process this situation -> no problems
+                        if (player.Name == otherPlayer.Name)
+                        {
+                            Monitor.Exit(otherPlayer);
+                            continue;
+                        }
+
+                        HashSet<PlayerPart> partsToBeRemoved = new HashSet<PlayerPart>();
+
+                        foreach (var part in player.Parts)
+                            foreach (var otherPlayerPart in otherPlayer.Parts)
+                            {
+                                if (CanBeEaten(part, otherPlayerPart) && !partsToBeRemoved.Contains(otherPlayerPart)
+                                    && !partsToBeRemoved.Contains(part))
+                                {
+                                    part.Mass += otherPlayerPart.Mass;
+                                    partsToBeRemoved.Add(otherPlayerPart);
+                                }
+                                if (CanBeEaten(otherPlayerPart, part) && !partsToBeRemoved.Contains(otherPlayerPart)
+                                    && !partsToBeRemoved.Contains(part))
+                                {
+                                    otherPlayerPart.Mass += part.Mass;
+                                    partsToBeRemoved.Add(part);
+                                }
+                            }
+                        if (partsToBeRemoved.Count > 0)
+                        {
+                            toBeInvalidated = true;
+                            gameServer.ConnectionManager.SendToClient(otherPlayer.Name, new Invalidate("Eating"));
+                        }
+
+                        otherPlayer.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
+                        player.Parts.RemoveAll(p => partsToBeRemoved.Contains(p));
+
+                        if (otherPlayer.Parts.Count == 0)
+                            eatenPlayers.Add(otherPlayer); // cannot be removed while enumerated!
+
+                        if (player.Parts.Count == 0)
+                            eatenPlayers.Add(player);
+
+                        Monitor.Exit(otherPlayer);
+                    }
+                }
+
+                foreach (var eatenPlayer in eatenPlayers)
+                {
+                    gameServer.RemovePlayer(eatenPlayer.Name, "You have been eaten!");
+                }
+            }
+
+            return toBeInvalidated;
+        }
+
+        /// <summary>
+        /// Divides the virus.
+        /// </summary>
+        /// <param name="virus">The virus.</param>
+        /// <param name="gameState">State of the game.</param>
+        private void DivideVirus(Virus virus, GameState gameState)
         {
             var numberOfNewViruses = virus.Mass / GameServer.DefaultVirusSize;
             var newViruses = new List<Virus>();
@@ -522,21 +556,29 @@ namespace AgarIOServer.Commands
 
                 do
                 {
-                    newVirus.EndX = GameServer.RandomG.Next(minX, maxX);
-                    newVirus.EndY = GameServer.RandomG.Next(minY, maxY);
+                    newVirus.EndX = GameServer.RandomGenerator.Next(minX, maxX);
+                    newVirus.EndY = GameServer.RandomGenerator.Next(minY, maxY);
                 } while (newViruses.Exists(v => WillBeInCollision(newVirus, v)));
 
-                newVirus.AnimationStartTime = Stopwatch.GetTimestamp();
-                newVirus.AnimationEndTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency * 1; // 5s animation
+                newVirus.MovementStartTime = Stopwatch.GetTimestamp();
+                newVirus.MovementEndTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency * 1; // 5s animation
                 newVirus.StartX = virus.X;
                 newVirus.StartY = virus.Y;
                 newViruses.Add(newVirus);
-                server.GameState.Viruses.Add(newVirus);
+                gameState.Viruses.Add(newVirus);
             }
 
-            server.GameState.Viruses.Remove(virus);
+            gameState.Viruses.Remove(virus);
         }
 
+        /// <summary>
+        /// Determines whether <paramref name="virus1"/> will be at the end 
+        /// of the movement (division movement) in collision with <paramref name="virus2"/>.
+        /// </summary>
+        /// <param name="virus1">The virus1.</param>
+        /// <param name="virus2">The virus2.</param>
+        /// <returns><c>true</c> if <paramref name="virus1"/> will be at the end 
+        /// of the movement (division movement) in collision with <paramref name="virus2"/>, <c>false</c> otherwise.</returns>
         private bool WillBeInCollision(Virus virus1, Virus virus2)
         {
             var dx = virus2.EndX - virus1.EndX;
@@ -545,6 +587,12 @@ namespace AgarIOServer.Commands
             return distance < virus1.Radius + virus2.Radius;
         }
 
+        /// <summary>
+        /// Determines whether the specified part can be divided by the specified virus.
+        /// </summary>
+        /// <param name="virus">The virus.</param>
+        /// <param name="part">The part.</param>
+        /// <returns><c>true</c> if the specified part can be divided by the specified virus; otherwise, <c>false</c>.</returns>
         private bool CanBeDividedByVirus(Virus virus, PlayerPart part)
         {
             if (part.IsBeingEjected)
@@ -561,6 +609,12 @@ namespace AgarIOServer.Commands
                 part.Mass > 1.25 * virus.Mass;
         }
 
+        /// <summary>
+        /// Determines whether the specified part can be eaten by the specified virus.
+        /// </summary>
+        /// <param name="virus">The virus.</param>
+        /// <param name="part">The part.</param>
+        /// <returns><c>true</c> if the specified part can be eaten by the specified virus; otherwise, <c>false</c>.</returns>
         private bool CanBeEatenByVirus(Virus virus, PlayerPart part)
         {
             if (!part.IsBeingEjected)
@@ -573,6 +627,12 @@ namespace AgarIOServer.Commands
             return distance <= virus.Radius;
         }
 
+        /// <summary>
+        /// Determines whether the specified virus can be eaten by the specified part.
+        /// </summary>
+        /// <param name="virus">The virus.</param>
+        /// <param name="part">The part.</param>
+        /// <returns><c>true</c> if the specified virus can be eaten by the specified part; otherwise, <c>false</c>.</returns>
         private bool CanBeEaten(Virus virus, PlayerPart part)
         {
             if (part.IsBeingEjected)
@@ -586,6 +646,12 @@ namespace AgarIOServer.Commands
                 part.Mass > 1.25 * virus.Mass;
         }
 
+        /// <summary>
+        /// Determines whether <paramref name="part1"/> can be merged with <paramref name="part2"/>.
+        /// </summary>
+        /// <param name="part1">The part1.</param>
+        /// <param name="part2">The part2.</param>
+        /// <returns><c>true</c> if <paramref name="part1"/> can be merged with <paramref name="part2"/>; otherwise, <c>false</c>.</returns>
         private bool CanBeMerged(PlayerPart part1, PlayerPart part2)
         {
             if (part1.MergeTime > 0 || part2.MergeTime > 0)
@@ -596,6 +662,12 @@ namespace AgarIOServer.Commands
             return distance < 0.5 * (part1.Radius + part2.Radius);
         }
 
+        /// <summary>
+        /// Determines whether the specified <paramref name="partToBeEaten"/> can be eaten by the specified <paramref name="eatingPart"/>.
+        /// </summary>
+        /// <param name="eatingPart">The eating part.</param>
+        /// <param name="partToBeEaten">The part to be eaten.</param>
+        /// <returns><c>true</c> if the specified <paramref name="partToBeEaten"/> can be eaten by the specified <paramref name="eatingPart"/>; otherwise, <c>false</c>.</returns>
         private bool CanBeEaten(PlayerPart eatingPart, PlayerPart partToBeEaten)
         {
             if (eatingPart.IsBeingEjected)
@@ -612,6 +684,12 @@ namespace AgarIOServer.Commands
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified food can be eaten by the specified part.
+        /// </summary>
+        /// <param name="food">The food.</param>
+        /// <param name="playerPart">The player part.</param>
+        /// <returns><c>true</c> if the specified food can be eaten by the specified part; otherwise, <c>false</c>.</returns>
         private bool CanBeEaten(Food food, PlayerPart playerPart)
         {
             var dx = food.X - playerPart.X;

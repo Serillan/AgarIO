@@ -1,26 +1,33 @@
-﻿using System;
+﻿//#define ServerLoop // for higher server load it might be better
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using AgarIOServer.Entities;
-using AgarIOServer.Actions;
-using AgarIOServer.Commands;
+using DarkAgarServer.Entities;
+using DarkAgarServer.Commands;
 using System.Timers;
 using System.Diagnostics;
 using System.Threading;
 
-namespace AgarIOServer
+
+namespace DarkAgarServer
 {
+    /// <summary>
+    /// The main game server class.
+    /// </summary>
     class GameServer
     {
+        #region Game Constants
         public const int GameLoopInterval = 16;
-        public const int ServerLoopInterval = 30; // not used right now 
+        public const int ServerLoopInterval = 16; // not used right now 
         public const int MaxLocationX = 2400; // 9000
         public const int MaxLocationY = 2400;
         public const int PlayerStartSize = 100; // 400
+        public const int PlayerMaximumNumberOfPartsForDivision = 16; // player can have more parts (max 2 * this - 1)
         public const int MinimumDivisionSize = 200;
         public const int DefaultVirusSize = 600;
         public const int MaxVirusSize = 1000;
@@ -29,29 +36,52 @@ namespace AgarIOServer
         public const int MaxSizeOfFood = 15;
         public const int MaxNumberOfFood = 40; // 300
         public const int MaxNumberOfViruses = 10; // 100
-        public static Random RandomG = new Random();
+        #endregion
+
+        /// <summary>
+        /// The random generator.
+        /// </summary>
+        public static Random RandomGenerator = new Random();
+
+        /// <summary>
+        /// Gets or sets the connection manager.
+        /// </summary>
+        /// <value>The connection manager.</value>
         public ConnectionManager ConnectionManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the game.
+        /// </summary>
+        /// <value>The state of the game.</value>
         public GameState GameState { get; set; }
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GameServer"/> class.
+        /// </summary>
+        /// <param name="connectionManager">The connection manager.</param>
         public GameServer(ConnectionManager connectionManager)
         {
             this.ConnectionManager = connectionManager;
         }
 
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
         public void Start()
         {
             GameState = GenerateNewGameState();
             ConnectionManager.PlayerCommandHandler = ProcessClientCommand;
             ConnectionManager.NewPlayerHandler = AddNewPlayer;
-            //Timer timer = new Timer();
-            //timer.Interval = ServerLoopInterval;
-            //timer.Elapsed += ServerLoop;
-            //timer.Start();
 
-            //Task.Factory.StartNew((System.Action) ServerLoop, TaskCreationOptions.LongRunning);
+#if ServerLoop
+            Task.Factory.StartNew((System.Action) ServerLoop, TaskCreationOptions.LongRunning);
+#endif
         }
 
+        /// <summary>
+        /// Generates the new state of the game.
+        /// </summary>
+        /// <returns>GameState.</returns>
         public GameState GenerateNewGameState()
         {
             GameState state = new GameState();
@@ -61,7 +91,7 @@ namespace AgarIOServer
             {
                 for (int i = 0; i < MaxNumberOfFood; i++)
                 {
-                    state.Food.Add(new Food(RandomG.Next(MaxLocationX), RandomG.Next(MaxLocationY), RandomG.Next(GameServer.MinSizeOfFood, GameServer.MaxSizeOfFood)));
+                    state.Food.Add(new Food(RandomGenerator.Next(MaxLocationX), RandomGenerator.Next(MaxLocationY), RandomGenerator.Next(GameServer.MinSizeOfFood, GameServer.MaxSizeOfFood)));
                 }
             }
 
@@ -76,6 +106,11 @@ namespace AgarIOServer
             return state;
         }
 
+#if ServerLoop
+        /// <summary>
+        /// The main server loop used for sending <see cref="UpdateState"/> command to all
+        /// connected players.
+        /// </summary>
         private void ServerLoop()
         {
             long a = 0, b = 0;
@@ -86,34 +121,40 @@ namespace AgarIOServer
                 delta = 1000 * (b - a) / Stopwatch.Frequency;
                 if (delta >= ServerLoopInterval)
                 {
-                    lock (GameState)
-                    {
-                        lock (ConnectionManager.Connections)
-                        {
-                            GameState.Version++;
-                            ConnectionManager.SendToAllClients(new UpdateState(GameState));
-                        }
-                    }
-                    //Console.WriteLine(1000 * (b - a) / Stopwatch.Frequency);
+                        GameState.StateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
+                        ConnectionManager.SendToAllClients(new UpdateState(GameState));
+                        GameState.StateLock.ExitWriteLock();
                     a = Stopwatch.GetTimestamp();
                 }
             }
-
         }
+#endif
 
+        /// <summary>
+        /// Processes the client command.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// <param name="command">The command.</param>
         private void ProcessClientCommand(string playerName, Command command)
         {
             Interlocked.Add(ref GameState.Version, 1);
 
-            GameState.StateLock.EnterReadLock(); // paralell processing is allowed
+            GameState.GameStateLock.EnterReadLock(); // parallel processing is allowed
             command.Process(this, playerName);
-            GameState.StateLock.ExitReadLock();
+            GameState.GameStateLock.ExitReadLock();
 
-            GameState.StateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
+#if !ServerLoop
+            GameState.GameStateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
-            GameState.StateLock.ExitWriteLock();
+            GameState.GameStateLock.ExitWriteLock();
+#endif
         }
 
+        /// <summary>
+        /// Adds the new player.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// TODO Edit XML Comment Template for AddNewPlayer
         private void AddNewPlayer(string playerName)
         {
             Player newPlayer = new Player(playerName, GameState);
@@ -123,14 +164,21 @@ namespace AgarIOServer
             }
 
             Interlocked.Add(ref GameState.Version, 1);
+#if !ServerLoop
+            GameState.GameStateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            GameState.GameStateLock.ExitWriteLock();
+#endif
         }
 
-        public void RemovePlayer(string playerName, string msg)
+        /// <summary>
+        /// Removes the player.
+        /// </summary>
+        /// <param name="playerName">Name of the player.</param>
+        /// <param name="stopMessage">The stop message.</param>
+        public void RemovePlayer(string playerName, string stopMessage)
         {
-
-
-            ConnectionManager.SendToClient(playerName, new Stop(msg));
+            ConnectionManager.SendToClient(playerName, new Stop(stopMessage));
 
             lock (GameState.Players)
             {
@@ -138,6 +186,7 @@ namespace AgarIOServer
             }
 
             ConnectionManager.EndClientConnection(playerName);
+
         }
 
     }
