@@ -72,7 +72,7 @@ namespace DarkAgar
         public const int MaxLocationY = 2400;
 
         /// <summary>
-        /// The game loop interval in miliseconds.
+        /// The game loop interval in milliseconds.
         /// </summary>
         public const int GameLoopInterval = 16;
 

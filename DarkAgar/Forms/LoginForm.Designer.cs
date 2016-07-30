@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             this.LoginButton = new System.Windows.Forms.Button();
             this.LoginTextBox = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -100,14 +101,14 @@
             this.IPAddressTextBox.TabIndex = 5;
             this.IPAddressTextBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.IPAddressTextBox_MouseClick);
             // 
-            // AddressLabel
+            // AdressLabel
             // 
             this.AdressLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.AdressLabel.AutoSize = true;
             this.AdressLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.AdressLabel.ForeColor = System.Drawing.SystemColors.MenuText;
             this.AdressLabel.Location = new System.Drawing.Point(134, 16);
-            this.AdressLabel.Name = "AddressLabel";
+            this.AdressLabel.Name = "AdressLabel";
             this.AdressLabel.Size = new System.Drawing.Size(193, 29);
             this.AdressLabel.TabIndex = 6;
             this.AdressLabel.Text = "Server Address";
@@ -161,6 +162,7 @@
             this.ClientSize = new System.Drawing.Size(955, 647);
             this.Controls.Add(this.panel1);
             this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "LoginForm";
             this.Text = "DarkAgar";
             this.panel1.ResumeLayout(false);

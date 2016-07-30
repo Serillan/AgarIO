@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameForm));
             this.GamePanel = new DarkAgar.Forms.GamePanel();
             this.ScoreLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.GamePanel)).BeginInit();
@@ -65,6 +66,7 @@
             this.ClientSize = new System.Drawing.Size(804, 545);
             this.Controls.Add(this.GamePanel);
             this.DoubleBuffered = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GameForm";
             this.Text = "DarkAgar";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;

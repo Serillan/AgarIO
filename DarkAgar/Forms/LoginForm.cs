@@ -55,6 +55,5 @@ namespace DarkAgar.Forms
             ServerListBox.ClearSelected();
             ServerListBox.SetSelected(2, true);
         }
-
     }
 }

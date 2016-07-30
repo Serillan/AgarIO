@@ -66,7 +66,7 @@ namespace DarkAgar
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GraphicsEngine"/> class.
+        /// Initializes a new instance of the <see cref="GraphicsEngine" /> class.
         /// </summary>
         /// <param name="gameForm">The game form.</param>
         public GraphicsEngine(GameForm gameForm)
