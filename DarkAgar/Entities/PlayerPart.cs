@@ -98,10 +98,7 @@ namespace DarkAgar.Entities
         /// <param name="number">The number.</param>
         /// <param name="n">The n.</param>
         /// <returns>The <paramref name="n" />-th root of the <paramref name="number" />.</returns>
-        private float NthRoot(float number, int n)
-        {
-            return (float)(Math.Pow(number, 1.0 / n));
-        }
+        private static float NthRoot(float number, int n) => (float)(Math.Pow(number, 1.0 / n));
 
         /// <summary>
         /// Clones this instance.

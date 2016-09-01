@@ -28,11 +28,9 @@ namespace DarkAgar.Entities
         /// <returns>true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.</returns>
         public bool Equals(Food other)
         {
-            if (other.X == this.X && other.Y == this.Y && 
-                other.Color[0] == this.Color[0] && other.Color[1] == this.Color[1] && other.Color[2] == this.Color[2]
-                && other.Mass == this.Mass)
-                return true;
-            return false;
+            return Math.Abs(other.X - this.X) < 0.0001 && Math.Abs(other.Y - this.Y) < 0.0001 && 
+                   other.Color[0] == this.Color[0] && other.Color[1] == this.Color[1] && other.Color[2] == this.Color[2]
+                   && other.Mass == this.Mass;
         }
 
         /// <summary>

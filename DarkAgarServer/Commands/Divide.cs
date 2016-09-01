@@ -33,7 +33,7 @@ namespace DarkAgarServer.Commands
                 if (player.Parts.Count >= 16)
                     return;
 
-                List<PlayerPart> newParts = new List<PlayerPart>();
+                var newParts = new List<PlayerPart>();
                 var freeIdentifiers = Enumerable.Range(0, 40).Where(n => !player.Parts.Exists(p => p.Identifier == n)).ToList();
                 var i = 0;
 

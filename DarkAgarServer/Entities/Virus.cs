@@ -44,14 +44,14 @@ namespace DarkAgarServer.Entities
         /// <summary>
         /// Gets or sets the movement start time.
         /// </summary>
-        /// <value>The the movement start time.</value>
+        /// <value>The movement start time.</value>
         [ProtoBuf.ProtoIgnore]
         public long MovementStartTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the the movement end time.
+        /// Gets or sets the movement end time.
         /// </summary>
-        /// <value>The the movement end time.</value>
+        /// <value>The movement end time.</value>
         [ProtoBuf.ProtoIgnore]
         public long MovementEndTime { get; set; }
 

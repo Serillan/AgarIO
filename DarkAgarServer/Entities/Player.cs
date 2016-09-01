@@ -69,14 +69,12 @@ namespace DarkAgarServer.Entities
         /// </summary>
         /// <value>The x.</value>
         [ProtoBuf.ProtoIgnore]
-        new public float X
+        public new float X
         {
             get
             {
-                float x = 0;
-                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
-                    x += part.X;
-                return x / Parts.Where(p => !p.IsBeingEjected).Count();
+                float x = Parts.Where(p => !p.IsBeingEjected).Sum(part => part.X);
+                return x / Parts.Count(p => !p.IsBeingEjected);
             }
         }
         
@@ -85,14 +83,12 @@ namespace DarkAgarServer.Entities
         /// </summary>
         /// <value>The y.</value>
         [ProtoBuf.ProtoIgnore]
-        new public float Y
+        public new float Y
         {
             get
             {
-                float y = 0;
-                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
-                    y += part.Y;
-                return y / Parts.Where(p => !p.IsBeingEjected).Count();
+                float y = Parts.Where(p => !p.IsBeingEjected).Sum(part => part.Y);
+                return y / Parts.Count(p => !p.IsBeingEjected);
             }
         }
        
@@ -101,29 +97,14 @@ namespace DarkAgarServer.Entities
         /// </summary>
         /// <value>The mass.</value>
         [ProtoBuf.ProtoIgnore]
-        new public int Mass
-        {
-            get
-            {
-                var mass = 0;
-                foreach (var part in Parts.Where(p => !p.IsBeingEjected))
-                    mass += part.Mass;
-                return mass;
-            }
-        }
+        public new int Mass => Parts.Where(p => !p.IsBeingEjected).Sum(part => part.Mass);
 
         /// <summary>
         /// Gets the radius.
         /// </summary>
         /// <value>The radius.</value>
         [ProtoBuf.ProtoIgnore]
-        new public float Radius
-        {
-            get
-            {
-                return 10 * (float)Math.Sqrt(Mass / Math.PI);
-            }
-        }
+        public new float Radius => 10 * (float)Math.Sqrt(Mass / Math.PI);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Player" /> class.
@@ -134,8 +115,7 @@ namespace DarkAgarServer.Entities
         {
             this.Name = playerName;
             this.Parts = new List<PlayerPart>();
-            var part = new PlayerPart();
-            part.Mass = GameServer.PlayerStartSize;
+            var part = new PlayerPart {Mass = GameServer.PlayerStartSize};
 
             List<PlayerPart> otherPlayerParts;
 
@@ -169,7 +149,7 @@ namespace DarkAgarServer.Entities
         /// <param name="part2">The part2.</param>
         /// <returns><c>true</c> if <paramref name="part1"/> is in safe distance for creation 
         /// from <paramref name="part2"/>; otherwise, <c>false</c>.</returns>
-        private bool IsInSafeDistance(PlayerPart part1, PlayerPart part2)
+        private static bool IsInSafeDistance(PlayerPart part1, PlayerPart part2)
         {
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
@@ -185,7 +165,7 @@ namespace DarkAgarServer.Entities
         /// <param name="virus">The virus.</param>
         /// <returns><c>true</c> if the specified <paramref name="part"/> is in safe distance for creation 
         /// from the specified <paramref name="virus"/>; otherwise, <c>false</c>.</returns>
-        private bool IsInSafeDistance(PlayerPart part, Virus virus)
+        private static bool IsInSafeDistance(PlayerPart part, Virus virus)
         {
             var dx = virus.X - part.X;
             var dy = virus.Y - part.Y;

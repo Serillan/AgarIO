@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DarkAgarServer.Entities;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace DarkAgarServer.Commands
@@ -78,9 +79,9 @@ namespace DarkAgarServer.Commands
 
                         bool toBeInvalidated = false;
 
-                        List<PlayerPart> partsStillInsideOtherParts = new List<PlayerPart>();
-                        List<PlayerPart> partsToBeMerged = new List<PlayerPart>();
-                        List<PlayerPart> ejectedPartsToBeRemoved = new List<PlayerPart>();
+                        var partsStillInsideOtherParts = new List<PlayerPart>();
+                        var partsToBeMerged = new List<PlayerPart>();
+                        var ejectedPartsToBeRemoved = new List<PlayerPart>();
 
                         foreach (var part in player.Parts)
                         {
@@ -244,10 +245,10 @@ namespace DarkAgarServer.Commands
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns><c>true</c> if (<paramref name="x"/>, <paramref name="y"/>) is on the edge; otherwise, <c>false</c>.</returns>
-        private bool IsOnEdge(float x, float y)
+        private static bool IsOnEdge(float x, float y)
         {
-            bool isX = x == GameServer.MaxLocationX || x == 0;
-            bool isY = y == GameServer.MaxLocationY || y == 0;
+            bool isX = Math.Abs(x - GameServer.MaxLocationX) < 0.001 || x == 0;
+            bool isY = Math.Abs(y - GameServer.MaxLocationY) < 0.001 || y == 0;
             return isX || isY;
         }
 
@@ -257,7 +258,7 @@ namespace DarkAgarServer.Commands
         /// <param name="part1">The part1.</param>
         /// <param name="part2">The part2.</param>
         /// <returns><c>true</c> if <paramref name="part1"/> is in collision with <paramref name="part2"/>, <c>false</c> otherwise.</returns>
-        private bool AreInCollision(PlayerPart part1, PlayerPart part2)
+        private static bool AreInCollision(PlayerPart part1, PlayerPart part2)
         {
             var dx = part2.X - part1.X;
             var dy = part2.Y - part1.Y;
@@ -269,7 +270,7 @@ namespace DarkAgarServer.Commands
         /// Generates new food.
         /// </summary>
         /// <returns>Food.</returns>
-        private Food GenerateNewFood()
+        private static Food GenerateNewFood()
         {
             var random = GameServer.RandomGenerator;
             return new Food(random.Next(GameServer.MaxLocationX), random.Next(GameServer.MaxLocationY),
@@ -466,7 +467,6 @@ namespace DarkAgarServer.Commands
         /// </summary>
         /// <param name="player">The player.</param>
         /// <param name="gameServer">The server.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <returns><c>true</c> if player's prediction should be invalidated, <c>false</c> otherwise.</returns>
         private bool ProcessEatingPlayers(Player player, GameServer gameServer)
         {
@@ -486,7 +486,7 @@ namespace DarkAgarServer.Commands
                             continue;
                         }
 
-                        HashSet<PlayerPart> partsToBeRemoved = new HashSet<PlayerPart>();
+                        var partsToBeRemoved = new HashSet<PlayerPart>();
 
                         foreach (var part in player.Parts)
                             foreach (var otherPlayerPart in otherPlayer.Parts)
@@ -494,12 +494,14 @@ namespace DarkAgarServer.Commands
                                 if (CanBeEaten(part, otherPlayerPart) && !partsToBeRemoved.Contains(otherPlayerPart)
                                     && !partsToBeRemoved.Contains(part))
                                 {
+                                    Console.WriteLine("1");
                                     part.Mass += otherPlayerPart.Mass;
                                     partsToBeRemoved.Add(otherPlayerPart);
                                 }
                                 if (CanBeEaten(otherPlayerPart, part) && !partsToBeRemoved.Contains(otherPlayerPart)
                                     && !partsToBeRemoved.Contains(part))
                                 {
+                                    Console.WriteLine("2");
                                     otherPlayerPart.Mass += part.Mass;
                                     partsToBeRemoved.Add(part);
                                 }
@@ -544,8 +546,7 @@ namespace DarkAgarServer.Commands
 
             for (int i = 0; i < numberOfNewViruses; i++)
             {
-                var newVirus = new Virus();
-                newVirus.Mass = GameServer.DefaultVirusSize;
+                var newVirus = new Virus {Mass = GameServer.DefaultVirusSize};
 
                 var maxDiff = virus.Radius * 6;
 
@@ -579,7 +580,7 @@ namespace DarkAgarServer.Commands
         /// <param name="virus2">The virus2.</param>
         /// <returns><c>true</c> if <paramref name="virus1"/> will be at the end 
         /// of the movement (division movement) in collision with <paramref name="virus2"/>, <c>false</c> otherwise.</returns>
-        private bool WillBeInCollision(Virus virus1, Virus virus2)
+        private static bool WillBeInCollision(Virus virus1, Virus virus2)
         {
             var dx = virus2.EndX - virus1.EndX;
             var dy = virus2.EndY - virus1.EndY;
@@ -593,7 +594,7 @@ namespace DarkAgarServer.Commands
         /// <param name="virus">The virus.</param>
         /// <param name="part">The part.</param>
         /// <returns><c>true</c> if the specified part can be divided by the specified virus; otherwise, <c>false</c>.</returns>
-        private bool CanBeDividedByVirus(Virus virus, PlayerPart part)
+        private static bool CanBeDividedByVirus(Virus virus, PlayerPart part)
         {
             if (part.IsBeingEjected)
                 return false;
@@ -615,7 +616,7 @@ namespace DarkAgarServer.Commands
         /// <param name="virus">The virus.</param>
         /// <param name="part">The part.</param>
         /// <returns><c>true</c> if the specified part can be eaten by the specified virus; otherwise, <c>false</c>.</returns>
-        private bool CanBeEatenByVirus(Virus virus, PlayerPart part)
+        private static bool CanBeEatenByVirus(Virus virus, PlayerPart part)
         {
             if (!part.IsBeingEjected)
                 return false;
@@ -633,7 +634,7 @@ namespace DarkAgarServer.Commands
         /// <param name="virus">The virus.</param>
         /// <param name="part">The part.</param>
         /// <returns><c>true</c> if the specified virus can be eaten by the specified part; otherwise, <c>false</c>.</returns>
-        private bool CanBeEaten(Virus virus, PlayerPart part)
+        private static bool CanBeEaten(Virus virus, PlayerPart part)
         {
             if (part.IsBeingEjected)
                 return false;
@@ -652,7 +653,7 @@ namespace DarkAgarServer.Commands
         /// <param name="part1">The part1.</param>
         /// <param name="part2">The part2.</param>
         /// <returns><c>true</c> if <paramref name="part1"/> can be merged with <paramref name="part2"/>; otherwise, <c>false</c>.</returns>
-        private bool CanBeMerged(PlayerPart part1, PlayerPart part2)
+        private static bool CanBeMerged(PlayerPart part1, PlayerPart part2)
         {
             if (part1.MergeTime > 0 || part2.MergeTime > 0)
                 return false;
@@ -668,7 +669,7 @@ namespace DarkAgarServer.Commands
         /// <param name="eatingPart">The eating part.</param>
         /// <param name="partToBeEaten">The part to be eaten.</param>
         /// <returns><c>true</c> if the specified <paramref name="partToBeEaten"/> can be eaten by the specified <paramref name="eatingPart"/>; otherwise, <c>false</c>.</returns>
-        private bool CanBeEaten(PlayerPart eatingPart, PlayerPart partToBeEaten)
+        private static bool CanBeEaten(PlayerPart eatingPart, PlayerPart partToBeEaten)
         {
             if (eatingPart.IsBeingEjected)
                 return false;
@@ -690,7 +691,7 @@ namespace DarkAgarServer.Commands
         /// <param name="food">The food.</param>
         /// <param name="playerPart">The player part.</param>
         /// <returns><c>true</c> if the specified food can be eaten by the specified part; otherwise, <c>false</c>.</returns>
-        private bool CanBeEaten(Food food, PlayerPart playerPart)
+        private static bool CanBeEaten(Food food, PlayerPart playerPart)
         {
             var dx = food.X - playerPart.X;
             var dy = food.Y - playerPart.Y;

@@ -28,15 +28,8 @@ namespace DarkAgar.Entities
         /// </summary>
         /// <value>The radius.</value>
         [ProtoBuf.ProtoIgnore]
-        public float Radius
-        {
-            get
-            {
-                //return (20 + NthRoot(Mass, 5));
-                return 10 * (float) Math.Sqrt(Mass / Math.PI);
-            }
-        }
-       
+        public float Radius => 10 * (float) Math.Sqrt(Mass / Math.PI);
+
         /// <summary>
         /// Gets or sets the x coordinate.
         /// </summary>
@@ -50,16 +43,5 @@ namespace DarkAgar.Entities
         /// <value>The y.</value>
         [ProtoBuf.ProtoMember(4)]
         public float Y { get; set; }
-
-        /// <summary>
-        /// Returns the <paramref name="n"/>-th root of the <paramref name="number"/>.
-        /// </summary>
-        /// <param name="number">a.</param>
-        /// <param name="n">The n.</param>
-        /// <returns>The <paramref name="n"/>-th root of the <paramref name="number"/>.</returns>
-        private float NthRoot(float number, int n)
-        {
-            return (float)(Math.Pow(number, 1.0 / n));
-        }
     }
 }

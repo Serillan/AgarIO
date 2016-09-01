@@ -25,7 +25,7 @@ namespace DarkAgarServer
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginServer"/> class.
         /// </summary>
-        /// <param name="ipEndPoint">The ip end point.</param>
+        /// <param name="ipEndPoint">The IP end point.</param>
         private LoginServer(IPEndPoint ipEndPoint) : base(ipEndPoint) { }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace DarkAgarServer
         /// <returns>Task&lt;ClientConnection&gt;.</returns>
         public static async Task<ClientConnection> AcceptClientAsync(ClientAuthorizer clientAuthorizer)
         {
-            ClientConnection conn = new ClientConnection();
+            var conn = new ClientConnection();
             var loginServer = LoginServer.GetNewInstance();
             conn.IsClosed = false;
             conn.UdpClient = new UdpClient(new IPEndPoint(IPAddress.Any, 0));

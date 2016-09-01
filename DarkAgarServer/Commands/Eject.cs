@@ -44,7 +44,7 @@ namespace DarkAgarServer.Commands
             lock (player)
             {
 
-                List<PlayerPart> newParts = new List<PlayerPart>();
+                var newParts = new List<PlayerPart>();
                 byte i = 0;
 
                 var nearestPart = (from part in player.Parts

@@ -63,13 +63,8 @@ namespace DarkAgar
         {
             var copy = (GameState)MemberwiseClone();
 
-            var currentPlayerPartsCopy = new List<PlayerPart>();
-            foreach (var part in CurrentPlayer.Parts)
-                currentPlayerPartsCopy.Add(part.Clone());
-
-            var foodCopy = new List<Food>();
-            foreach (var food in Food)
-                foodCopy.Add(food);
+            var currentPlayerPartsCopy = CurrentPlayer.Parts.Select(part => part.Clone()).ToList();
+            var foodCopy = Food.ToList();
 
             copy.Food = foodCopy;
             copy.CurrentPlayer.Parts = currentPlayerPartsCopy;

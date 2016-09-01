@@ -84,7 +84,7 @@ namespace DarkAgarServer
         /// <returns>GameState.</returns>
         public GameState GenerateNewGameState()
         {
-            GameState state = new GameState();
+            var state = new GameState();
 
             // generate food
             lock (state.Food)
@@ -140,12 +140,16 @@ namespace DarkAgarServer
             Interlocked.Add(ref GameState.Version, 1);
 
             GameState.GameStateLock.EnterReadLock(); // parallel processing is allowed
+            Console.WriteLine("entering read");
             command.Process(this, playerName);
+            Console.WriteLine("exiting read");
             GameState.GameStateLock.ExitReadLock();
 
 #if !ServerLoop
             GameState.GameStateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
+            Console.WriteLine("entering write");
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            Console.WriteLine("exiting write");
             GameState.GameStateLock.ExitWriteLock();
 #endif
         }
@@ -156,16 +160,15 @@ namespace DarkAgarServer
         /// <param name="playerName">Name of the player.</param>
         private void AddNewPlayer(string playerName)
         {
-            Player newPlayer = new Player(playerName, GameState);
-            lock (GameState.Players)
-            {
-                GameState.Players.Add(newPlayer);
-            }
+            var newPlayer = new Player(playerName, GameState);
 
             Interlocked.Add(ref GameState.Version, 1);
 #if !ServerLoop
             GameState.GameStateLock.EnterWriteLock(); // while state is being serialized, nothing should be done with it (global lock on state)
+            Console.WriteLine("entering write2");
+            GameState.Players.Add(newPlayer);
             ConnectionManager.SendToAllClients(new UpdateState(GameState));
+            Console.WriteLine("exiting write2");
             GameState.GameStateLock.ExitWriteLock();
 #endif
         }

@@ -48,18 +48,18 @@ namespace DarkAgar
         /// Gets or sets the login manager.
         /// </summary>
         /// <value>The login manager.</value>
-        LoginManager LoginManager { get; set; }
+        private LoginManager LoginManager { get; set; }
 
         /// <summary>
         /// Gets or sets the graphics engine.
         /// </summary>
         /// <value>The graphics engine.</value>
-        GraphicsEngine GraphicsEngine { get; set; }
+        private GraphicsEngine GraphicsEngine { get; set; }
 
         /// <summary>
         /// The input manager
         /// </summary>
-        InputManager InputManager;
+        private InputManager InputManager { get; set; }
 
         /// <summary>
         /// The maximum x location.
@@ -135,36 +135,35 @@ namespace DarkAgar
                     break;
                 b = Stopwatch.GetTimestamp();
                 delta = 1000 * (b - a) / Stopwatch.Frequency;
-                if (delta >= GameLoopInterval)
+                if (delta < GameLoopInterval) continue;
+
+                if (GameState?.CurrentPlayer != null)
                 {
-                    if (GameState?.CurrentPlayer != null)
+                    lock (this)
                     {
-                        lock (this)
+                        Interlocked.Add(ref Time, 1);
+
+                        new MovementAction(InputManager.MousePosition).Process(this);
+
+                        if (InputManager.DivisionRequested)
                         {
-                            Interlocked.Add(ref Time, 1);
-
-                            new MovementAction(InputManager.MousePosition).Process(this);
-
-                            if (InputManager.DivisionRequested)
-                            {
-                                new DivideAction(InputManager.MousePosition).Process(this);
-                                InputManager.DivisionRequested = false;
-                            }
-
-                            if (InputManager.EjectionRequested)
-                            {
-                                new EjectAction(InputManager.MousePosition).Process(this);
-                                InputManager.EjectionRequested = false;
-                            }
-
-                            // deep clone of prediction
-                            GameState gameStateForRendering = GameState.DeepClonePrediction();
-
-                            GraphicsEngine.Render(gameStateForRendering);
+                            new DivideAction(InputManager.MousePosition).Process(this);
+                            InputManager.DivisionRequested = false;
                         }
+
+                        if (InputManager.EjectionRequested)
+                        {
+                            new EjectAction(InputManager.MousePosition).Process(this);
+                            InputManager.EjectionRequested = false;
+                        }
+
+                        // deep clone of prediction
+                        var gameStateForRendering = GameState.DeepClonePrediction();
+
+                        GraphicsEngine.Render(gameStateForRendering);
                     }
-                    a = Stopwatch.GetTimestamp();
                 }
+                a = Stopwatch.GetTimestamp();
             }
         }
 

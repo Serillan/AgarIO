@@ -20,13 +20,13 @@ namespace DarkAgar
         /// Gets or sets the game form.
         /// </summary>
         /// <value>The game form.</value>
-        GameForm GameForm { get; set; }
+        private GameForm GameForm { get; set; }
 
         /// <summary>
         /// Gets or sets the game.
         /// </summary>
         /// <value>The game.</value>
-        Game Game { get; set; }
+        private Game Game { get; set; }
 
         /// <summary>
         /// Gets the mouse position in game coordinates.

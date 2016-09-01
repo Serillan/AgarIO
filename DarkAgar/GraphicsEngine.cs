@@ -20,50 +20,38 @@ namespace DarkAgar
         /// <summary>
         /// Gets or sets the game form.
         /// </summary>
-        GameForm GameForm { get; set; }
+        private GameForm GameForm { get; set; }
 
         /// <summary>
         /// Gets or sets the game panel on which the game is drawn.
         /// </summary>
         /// <value>The game panel.</value>
-        static GamePanel GamePanel { get; set; }
+        private static GamePanel GamePanel { get; set; }
 
         /// <summary>
         /// Gets or sets the matrix pen with which the matrix is drawn.
         /// </summary>
         /// <value>The matrix pen.</value>
-        Pen MatrixPen { get; set; }
+        private Pen MatrixPen { get; set; }
 
         /// <summary>
         /// Gets or sets the game state copy. This state is rendered.
         /// We have game state copy because it is thread safe.
         /// </summary>
         /// <value>The game state copy.</value>
-        GameState GameStateCopy { get; set; }
+        private GameState GameStateCopy { get; set; }
 
         /// <summary>
         /// Gets the width of the game panel.
         /// </summary>
         /// <value>The width of the game panel.</value>
-        static public int GamePanelWidth
-        {
-            get
-            {
-                return GamePanel.Width;
-            }
-        }
+        public static int GamePanelWidth => GamePanel.Width;
 
         /// <summary>
         /// Gets the height of the game panel.
         /// </summary>
         /// <value>The height of the game panel.</value>
-        static public int GamePanelHeight
-        {
-            get
-            {
-                return GamePanel.Height;
-            }
-        }
+        public static int GamePanelHeight => GamePanel.Height;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphicsEngine" /> class.
@@ -96,7 +84,7 @@ namespace DarkAgar
         /// <param name="g">The graphics object used for drawing.</param>
         private void DrawGame(Graphics g)
         {
-            if (GameStateCopy == null || GameStateCopy.CurrentPlayer == null)
+            if (GameStateCopy?.CurrentPlayer == null)
                 return;
             g.Clear(Color.Black);
             TransformScene(g);
@@ -149,7 +137,7 @@ namespace DarkAgar
 
                 if (!part.IsBeingEjected) // draw name of player in the centre of the part
                 {
-                    Font myFont = new Font("Arial", 14);
+                    var myFont = new Font("Arial", 14);
 
                     var sizeOfText = g.MeasureString(name, myFont);
                     g.DrawString(name, myFont, Brushes.Black, part.X - sizeOfText.Width / 2, part.Y - sizeOfText.Height / 2);
@@ -222,7 +210,7 @@ namespace DarkAgar
             if (GameStateCopy?.Players == null)
                 return;
 
-            StringBuilder scoreText = new StringBuilder();
+            var scoreText = new StringBuilder();
             var sortedPlayers = (from player in GameStateCopy.Players
                                  orderby player.Mass descending
                                  select player).ToList();

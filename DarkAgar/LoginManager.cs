@@ -18,12 +18,12 @@ namespace DarkAgar
         /// Gets or sets the login form.
         /// </summary>
         /// <value>The login form.</value>
-        LoginForm LoginForm { get; set; }
+        private LoginForm LoginForm { get; set; }
 
         /// <summary>
         /// The server address
         /// </summary>
-        IPAddress ServerAddress;
+        private IPAddress ServerAddress;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginManager"/> class.
@@ -81,10 +81,10 @@ namespace DarkAgar
                 return;
             }
 
-            Game game = new Game();
-            GameForm gameForm = new GameForm();
-            GraphicsEngine graphicsEngine = new GraphicsEngine(gameForm);
-            InputManager inputManager = new InputManager(gameForm, game);
+            var game = new Game();
+            var gameForm = new GameForm();
+            var graphicsEngine = new GraphicsEngine(gameForm);
+            var inputManager = new InputManager(gameForm, game);
 
             game.Initialize(this, graphicsEngine, inputManager, connection, playerName);
             game.Start();

@@ -44,14 +44,13 @@ namespace DarkAgarServer
             Connections = new List<ClientConnection>();
             while (true)
             {
-                ClientConnection newConnection = await ClientConnection.AcceptClientAsync(IsConnectionAllowed);
+                var newConnection = await ClientConnection.AcceptClientAsync(IsConnectionAllowed);
                 lock (Connections)
                 {
                     if (Connections.Any(c => c.PlayerName == newConnection.PlayerName))
                         continue;           // already connected (... multiple connect packets from client)
 
-                    Console.WriteLine("Player {0} has succesfully connected!",
-                       newConnection.PlayerName);
+                    Console.WriteLine($"Player {newConnection.PlayerName} has successfully connected!");
                     Connections.Add(newConnection);
                     NewPlayerHandler(newConnection.PlayerName);
                 }
@@ -74,7 +73,7 @@ namespace DarkAgarServer
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;
-                    //Console.WriteLine("Player {0} sent: {1}", conn.PlayerName, command.GetType());
+                    Console.WriteLine("Player {0} sent: {1}", clientConnection.PlayerName, command.GetType());
                     PlayerCommandHandler(clientConnection.PlayerName, command);
                 }
                 else // timeout
@@ -83,7 +82,7 @@ namespace DarkAgarServer
                         return;
 
                     clientConnection.SendAsync(new Commands.Stop());
-                    Console.WriteLine("Stopping player {0} because of timeout!", clientConnection.PlayerName);
+                    Console.WriteLine($"Stopping player {clientConnection.PlayerName} because of timeout!");
                     PlayerCommandHandler(clientConnection.PlayerName, new Commands.Stop());
                     return;
                 }
@@ -147,9 +146,10 @@ namespace DarkAgarServer
             ClientConnection conn = null;
             lock (Connections)
             {
-                conn = Connections.Find(p => p.PlayerName == name);
+                conn = Connections.FirstOrDefault(p => p.PlayerName == name);
             }
-            conn.SendAsync(data);
+            if (conn != null)
+                conn.SendAsync(data);
         }
 
         /// <summary>
@@ -201,10 +201,10 @@ namespace DarkAgarServer
         /// <param name="playerName">Name of the player.</param>
         /// <param name="playerEndPoint">The player end point.</param>
         /// <param name="outputMessage">The output message.</param>
-        /// <returns><c>true</c> if connection is allowed for the client wth the desired player name; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if connection is allowed for the client with the desired player name; otherwise, <c>false</c>.</returns>
         private bool IsConnectionAllowed(string playerName, IPEndPoint playerEndPoint, out string outputMessage)
         {
-            bool isNameAlreadyUsed = false;
+            var isNameAlreadyUsed = false;
 
             lock (Connections)
             {

@@ -35,12 +35,12 @@ namespace DarkAgar.Commands
         /// <summary>
         /// Initializes a new instance of the <see cref="Eject"/> class.
         /// </summary>
-        /// <param name="X">X value (in game coordinates) of the position to which the part should be ejected.</param>
-        /// <param name="Y">Y value (in game coordinates) of the position to which the part should be ejected.</param>
-        public Eject(float X, float Y)
+        /// <param name="x">X value (in game coordinates) of the position to which the part should be ejected.</param>
+        /// <param name="y">Y value (in game coordinates) of the position to which the part should be ejected.</param>
+        public Eject(float x, float y)
         {
-            this.X = X;
-            this.Y = Y;
+            this.X = x;
+            this.Y = y;
         }
     }
 }

@@ -22,18 +22,18 @@ namespace DarkAgar
         /// <summary>
         /// The UDP server.
         /// </summary>
-        UdpClient UdpServer;
+        private UdpClient UdpServer;
         
         /// <summary>
         /// The login server port.
         /// </summary>
-        const int LoginServerPort = 11028;
+        private const int LoginServerPort = 11028;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is closed.
         /// </summary>
         /// <value><c>true</c> if this instance is closed; otherwise, <c>false</c>.</value>
-        bool IsClosed { get; set; }
+        private bool IsClosed { get; set; }
 
         /// <summary>
         /// Connects to the server.
@@ -45,7 +45,7 @@ namespace DarkAgar
         /// <exception cref="TimeoutException">Throws exception if we cannot connect to the Server.</exception>
         public static async Task<ServerConnection> ConnectAsync(IPAddress address, string playerName)
         {
-            ServerConnection conn = new ServerConnection();
+            var conn = new ServerConnection();
             conn.UdpServer = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
             conn.UdpServer.Connect(address, LoginServerPort);                 // for writing to server
             conn.IsClosed = false;
