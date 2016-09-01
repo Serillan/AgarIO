@@ -494,14 +494,12 @@ namespace DarkAgarServer.Commands
                                 if (CanBeEaten(part, otherPlayerPart) && !partsToBeRemoved.Contains(otherPlayerPart)
                                     && !partsToBeRemoved.Contains(part))
                                 {
-                                    Console.WriteLine("1");
                                     part.Mass += otherPlayerPart.Mass;
                                     partsToBeRemoved.Add(otherPlayerPart);
                                 }
                                 if (CanBeEaten(otherPlayerPart, part) && !partsToBeRemoved.Contains(otherPlayerPart)
                                     && !partsToBeRemoved.Contains(part))
                                 {
-                                    Console.WriteLine("2");
                                     otherPlayerPart.Mass += part.Mass;
                                     partsToBeRemoved.Add(part);
                                 }
