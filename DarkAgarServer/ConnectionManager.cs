@@ -130,9 +130,10 @@ namespace DarkAgarServer
             ClientConnection conn = null;
             lock (Connections)
             {
-                conn = Connections.Find(p => p.PlayerName == playerName);
+                conn = Connections.FirstOrDefault(p => p.PlayerName == playerName);
             }
-            conn.SendAsync(message);
+            if (conn != null)
+                conn.SendAsync(message);
         }
 
         /// <summary>
