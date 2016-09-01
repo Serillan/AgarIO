@@ -16,8 +16,8 @@ namespace DarkAgar.Actions
         /// <summary>
         /// Creates new player action.
         /// </summary>
-        /// <param name="MousePosition">Mouse position that will be used for the action.</param>
-        public EjectAction(Point MousePosition) : base(MousePosition)
+        /// <param name="mousePosition">Mouse position that will be used for the action.</param>
+        public EjectAction(Point mousePosition) : base(mousePosition)
         {
         }
 

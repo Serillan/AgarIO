@@ -17,12 +17,12 @@ namespace DarkAgarServer
         /// <param name="args">The arguments.</param>
         static void Main(string[] args)
         {
-            ConnectionManager manager = new ConnectionManager();
+            var manager = new ConnectionManager();
             Console.WriteLine("Starting listening loop");
             var task = manager.StartListeningAsync();
 
             Console.WriteLine("Starting game loop");
-            GameServer game = new GameServer(manager);
+            var game = new GameServer(manager);
             game.Start();
             Console.WriteLine("Server started!");
 

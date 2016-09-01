@@ -18,8 +18,8 @@ namespace DarkAgar.Actions
         /// <summary>
         /// Creates new player action.
         /// </summary>
-        /// <param name="MousePosition">Mouse position that will be used for the action.</param>
-        public MovementAction(Point MousePosition) : base(MousePosition)
+        /// <param name="mousePosition">Mouse position that will be used for the action.</param>
+        public MovementAction(Point mousePosition) : base(mousePosition)
         {
         }
 
@@ -39,7 +39,7 @@ namespace DarkAgar.Actions
             command.Time = game.Time;
             command.Movement = new List<Tuple<int, float, float, float>>();
 
-            List<PlayerPart> doneParts = new List<PlayerPart>();
+            var doneParts = new List<PlayerPart>();
 
             state.CurrentPlayer.Parts.Sort((p1, p2) =>
             {
@@ -180,7 +180,7 @@ namespace DarkAgar.Actions
         /// <param name="part2">Second part.</param>
         /// <returns><c>true</c> if the part with coordinates (<paramref name="x1"/>, <paramref name="x2"/>)
         /// and radius <paramref name="radius1"/> is in collision with <paramref name="part2"/>, <c>false</c> otherwise.</returns>
-        private bool AreInCollision(float x1, float y1, float radius1, PlayerPart part2)
+        private static bool AreInCollision(float x1, float y1, float radius1, PlayerPart part2)
         {
             var dx = part2.X - x1;
             var dy = part2.Y - y1;
@@ -198,7 +198,7 @@ namespace DarkAgar.Actions
         /// <param name="part">The part.</param>
         /// <returns><c>true</c> if  <paramref name="food"/> can be eaten by <paramref name="part"/>
         /// when the part is on the position (<paramref name="nextX"/>, <paramref name="nextY"/>).; otherwise, <c>false</c>.</returns>
-        private bool CanBeEaten(Food food, float nextX, float nextY, PlayerPart part)
+        private static bool CanBeEaten(Food food, float nextX, float nextY, PlayerPart part)
         {
             var dx = food.X - nextX;
             var dy = food.Y - nextY;

@@ -26,11 +26,11 @@ namespace DarkAgar.Actions
         /// <summary>
         /// Initializes a new instance of the <see cref="Action"/> class.
         /// </summary>
-        /// <param name="MousePosition">Mouse position that will be used for the action.</param>
-        protected Action(Point MousePosition)
+        /// <param name="mousePosition">Mouse position that will be used for the action.</param>
+        protected Action(Point mousePosition)
         {
-            this.X = MousePosition.X;
-            this.Y = MousePosition.Y;
+            this.X = mousePosition.X;
+            this.Y = mousePosition.Y;
         }
 
         /// <summary>

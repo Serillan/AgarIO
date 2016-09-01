@@ -14,7 +14,6 @@ namespace DarkAgarServer.Commands
     [ProtoBuf.ProtoContract]
     class Divide : Command
     {
-
         /// <summary>
         /// Processes the command received from the client.
         /// </summary>

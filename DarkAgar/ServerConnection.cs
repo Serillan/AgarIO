@@ -56,22 +56,21 @@ namespace DarkAgar
 
             for (int i = 0; i < 5; i++)
             {
-                await conn.SendAsync(String.Format("CONNECT {0}", playerName));
+                await conn.SendAsync($"CONNECT {playerName}");
 
                 if (await Task.WhenAny(task, Task.Delay(1000)) == task)
                 {
                     res = task.Result;
-                    if (res.Split()[0] == "CONNECTED")
+                    switch (res.Split()[0])
                     {
-                        conn.UdpServer.Connect(address, int.Parse(res.Split()[1]));
-                        for (int j = 0; j < 3; j++)
-                            conn.SendAsync("ACK");
-                        return conn;
-                    }
-                    if (res.Split()[0] == "ERROR")
-                    {
-                        conn.Dispose();
-                        throw new ArgumentException(res.Substring(6).Trim());
+                        case "CONNECTED":
+                            conn.UdpServer.Connect(address, int.Parse(res.Split()[1]));
+                            for (int j = 0; j < 3; j++)
+                                conn.SendAsync("ACK");
+                            return conn;
+                        case "ERROR":
+                            conn.Dispose();
+                            throw new ArgumentException(res.Substring(6).Trim());
                     }
                 }
             }
@@ -93,7 +92,7 @@ namespace DarkAgar
                 if (IsClosed)
                     break;
                 var receiveTask = ReceiveCommandAsync();
-                if (await Task.WhenAny(receiveTask, Task.Delay(500000)) == receiveTask)
+                if (await Task.WhenAny(receiveTask, Task.Delay(5000)) == receiveTask)
                 {
                     handler(receiveTask.Result);
                 }
@@ -181,7 +180,6 @@ namespace DarkAgar
             var res = await ReceiveBinaryAsync();
             var message = Encoding.Default.GetString(res);
             return message;
-
         }
 
         /// <summary>

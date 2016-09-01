@@ -17,8 +17,8 @@ namespace DarkAgar.Actions
         /// <summary>
         /// Initializes a new instance of the <see cref="DivideAction"/> class.
         /// </summary>
-        /// <param name="MousePosition">Mouse position that will be used for the action.</param>
-        public DivideAction(Point MousePosition) : base(MousePosition)
+        /// <param name="mousePosition">Mouse position that will be used for the action.</param>
+        public DivideAction(Point mousePosition) : base(mousePosition)
         {
         }
 

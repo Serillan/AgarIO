@@ -125,33 +125,6 @@ namespace DarkAgar
         }
 
         /// <summary>
-        /// Handles the MouseMove event of the GamePanel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
-        private void GamePanel_MouseMove(object sender, MouseEventArgs e)
-        {
-            var pos = GameForm.GamePanel.PointToClient(Cursor.Position);
-            float posX = pos.X;
-            float posY = pos.Y;
-
-            // view to game
-            float q = (float)((0.1 * GameForm.GamePanel.Width) / Game.GameState.CurrentPlayer.Radius);
-            
-            // opposite order!
-            posX -= GameForm.GamePanel.Width / 2.0f;
-            posY -= GameForm.GamePanel.Height / 2.0f;
-            if (q < 1)
-            {
-                posX *= 1 / q;
-                posY *= 1 / q;
-            }
-            posX += Game.GameState.CurrentPlayer.X;
-            posY += Game.GameState.CurrentPlayer.Y;
-
-        }
-
-        /// <summary>
         /// Handles the FormClosed event of the GameForm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
