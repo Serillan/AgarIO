@@ -73,7 +73,7 @@ namespace DarkAgarServer
                 if (task == receiveTask)
                 {
                     var command = receiveTask.Result;
-                    Console.WriteLine("Player {0} sent: {1}", clientConnection.PlayerName, command.GetType());
+                    //Console.WriteLine("Player {0} sent: {1}", clientConnection.PlayerName, command.GetType());
                     PlayerCommandHandler(clientConnection.PlayerName, command);
                 }
                 else // timeout
